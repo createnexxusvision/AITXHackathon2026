@@ -4,5 +4,23 @@
     "path": "data/corridor_lite.json",
     "center": [29.772, -95.40],
     "zoom": 14.5
+  },
+  "montrose_westheimer": {
+    "label": "Westheimer / Montrose",
+    "path": "data/areas/montrose_westheimer/corridor_lite.json",
+    "center": [29.7437, -95.3952],
+    "zoom": 14.5
+  },
+  "heights_19th": {
+    "label": "19th Street / The Heights",
+    "path": "data/areas/heights_19th/corridor_lite.json",
+    "center": [29.8028, -95.4058],
+    "zoom": 14.5
+  },
+  "midtown_main": {
+    "label": "Main Street / Midtown",
+    "path": "data/areas/midtown_main/corridor_lite.json",
+    "center": [29.7329, -95.3840],
+    "zoom": 14.5
   }
 }
