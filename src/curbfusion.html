@@ -50,7 +50,7 @@
   .basemaps button.active{background:var(--acc);color:#1a1300;border-color:var(--acc);font-weight:600}
   #timeicon{font-size:16px;margin-right:2px;vertical-align:-2px}
   #timeband{color:var(--mut);font-size:11.5px}
-  .tiles-dark{filter:invert(1) hue-rotate(180deg) brightness(.92) contrast(.9) saturate(.7)}
+
 </style>
 </head>
 <body>
@@ -60,9 +60,8 @@
   <h1><span class="raccoon">🦝</span>CurbFusion<small>Team Trash Pandas · Houston open data, block face × hour of week</small></h1>
   <p class="hint">Drag the slider to fast-forward through the week. Switch the map below between streets and satellite, and watch it shift from day to evening to night as time passes.</p>
   <div class="basemaps">
-    <button data-map="streets">🗺️ Streets</button>
+    <button data-map="streets" class="active">🗺️ Streets</button>
     <button data-map="satellite">🛰️ Satellite</button>
-    <button data-map="dark" class="active">🌓 Dark</button>
   </div>
   <select id="mode"></select>
   <div class="blurb" id="blurb"></div>
@@ -91,12 +90,11 @@ const map=L.map("map",{zoomControl:false,preferCanvas:true});
 L.control.zoom({position:"bottomright"}).addTo(map);
 const ERR="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
 const basemaps={
-  dark:L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap contributors",maxZoom:19,errorTileUrl:ERR,className:"tiles-dark"}),
   streets:L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap contributors",maxZoom:19,errorTileUrl:ERR}),
   satellite:L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{attribution:"Esri, Maxar, Earthstar Geographics",maxZoom:19,errorTileUrl:ERR}),
 };
 const satLabels=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,errorTileUrl:ERR,opacity:.9});
-let activeBase="dark"; basemaps.dark.addTo(map);
+let activeBase="streets"; basemaps.streets.addTo(map);
 Object.values(basemaps).forEach(t=>{let fail=0; t.on("tileerror",()=>{ if(++fail>4 && map.hasLayer(t)) map.removeLayer(t); });});
 function setBasemap(name){ if(name===activeBase)return;
   map.removeLayer(basemaps[activeBase]); if(map.hasLayer(satLabels)) map.removeLayer(satLabels);
@@ -128,10 +126,35 @@ const ctx=L.layerGroup().addTo(map); D.faces.forEach(f=>ctx.addLayer(L.polyline(
 const home=()=>{map.invalidateSize();map.fitBounds([[29.758,-95.433],[29.786,-95.367]],{padding:[10,10]});};
 home(); setTimeout(home,300); window.addEventListener("resize",()=>setTimeout(home,100));
 
-function sky(hod){ // day / evening / night, by hour of day 0..23
-  if(hod>=6&&hod<18) return {icon:"☀️",label:"Day",tint:"rgba(0,0,0,0)"};
-  if(hod>=18&&hod<21) return {icon:"🌇",label:"Evening",tint:"rgba(255,140,66,.20)"};
-  return {icon:"🌙",label:"Night",tint:"rgba(8,12,32,.55)"};}
+// one keyframe per hour of day: night is not flat -- 2 AM reads deeper/bluer than 5 AM,
+// and color swings warm through sunrise/sunset rather than snapping between three flat states.
+const SKY=[
+  {c:[8,11,26], a:.56,icon:"🌙",label:"Night"},      // 0
+  {c:[7,10,24], a:.58,icon:"🌙",label:"Night"},      // 1
+  {c:[6,9,22],  a:.60,icon:"🌙",label:"Night"},      // 2 -- deepest
+  {c:[7,10,24], a:.58,icon:"🌙",label:"Night"},      // 3
+  {c:[10,13,30],a:.52,icon:"🌙",label:"Late night"}, // 4
+  {c:[46,44,72],a:.40,icon:"🌌",label:"Pre-dawn"},   // 5
+  {c:[255,150,90],a:.26,icon:"🌅",label:"Sunrise"},  // 6
+  {c:[255,205,150],a:.10,icon:"🌅",label:"Sunrise"}, // 7
+  {c:[255,255,255],a:0, icon:"☀️",label:"Day"},      // 8
+  {c:[255,255,255],a:0, icon:"☀️",label:"Day"},      // 9
+  {c:[255,255,255],a:0, icon:"☀️",label:"Day"},      // 10
+  {c:[255,255,255],a:0, icon:"☀️",label:"Day"},      // 11
+  {c:[255,255,255],a:0, icon:"☀️",label:"Day"},      // 12
+  {c:[255,255,255],a:0, icon:"☀️",label:"Day"},      // 13
+  {c:[255,255,255],a:0, icon:"☀️",label:"Day"},      // 14
+  {c:[255,255,255],a:0, icon:"☀️",label:"Day"},      // 15
+  {c:[255,255,255],a:0, icon:"☀️",label:"Day"},      // 16
+  {c:[255,200,140],a:.10,icon:"🌇",label:"Sunset"},  // 17
+  {c:[255,140,70], a:.26,icon:"🌇",label:"Sunset"},  // 18
+  {c:[150,90,120], a:.34,icon:"🌆",label:"Dusk"},     // 19
+  {c:[60,45,90],  a:.42,icon:"🌆",label:"Dusk"},      // 20
+  {c:[25,22,50],  a:.48,icon:"🌙",label:"Night"},     // 21
+  {c:[16,16,38],  a:.52,icon:"🌙",label:"Night"},     // 22
+  {c:[10,12,30],  a:.54,icon:"🌙",label:"Night"},     // 23
+];
+function sky(hod){const k=SKY[hod];return {icon:k.icon,label:k.label,tint:`rgba(${k.c[0]},${k.c[1]},${k.c[2]},${k.a})`};}
 function render(){
   const hod=h%24, s=sky(hod);
   $("hourlabel").textContent=`${DAYS[Math.floor(h/24)]} ${String(hod).padStart(2,"0")}:00`;
