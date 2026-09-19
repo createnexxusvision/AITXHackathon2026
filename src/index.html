@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Curb Fusion — Washington Ave PBD</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+  html,body{margin:0;height:100%;font:14px system-ui,sans-serif;background:#111;color:#eee}
+  #map{position:absolute;inset:0}
+  #panel{position:absolute;top:12px;left:12px;z-index:1000;background:rgba(20,20,20,.92);padding:12px 14px;border-radius:8px;width:300px}
+  #panel h1{font-size:15px;margin:0 0 8px}
+  #hour{width:100%}
+  #hourlabel{font-variant-numeric:tabular-nums;margin:4px 0 10px}
+  label{display:block;margin:3px 0}
+  #info{margin-top:10px;font-size:12px;color:#bbb;min-height:60px;white-space:pre-line}
+  .legend span{display:inline-block;width:14px;height:10px;margin-right:4px;vertical-align:middle}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="panel">
+  <h1>Curb Fusion — Washington Ave PBD</h1>
+  <input id="hour" type="range" min="0" max="167" value="93">
+  <div id="hourlabel"></div>
+  <label><input type="checkbox" id="l_demand" checked> demand (land use)</label>
+  <label><input type="checkbox" id="l_reg" checked> regulation</label>
+  <label><input type="checkbox" id="l_compl" checked> 311 complaints</label>
+  <label><input type="checkbox" id="w_permit"> what-if: PBD permit hours 24/7</label>
+  <div class="legend" style="margin-top:8px">
+    <span style="background:#2b83ba"></span>low
+    <span style="background:#ffffbf"></span>mid
+    <span style="background:#d7191c"></span>high
+    <span style="background:#555"></span>no parking
+  </div>
+  <div id="info">hover a block face</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const map=L.map("map",{zoomControl:false});
+L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{attribution:"&copy; OSM &copy; CARTO",maxZoom:19}).addTo(map);
+let data,layer,maxStress=1;
+const $=id=>document.getElementById(id);
+
+function ramp(t){ // 0..1 -> blue..yellow..red
+  t=Math.max(0,Math.min(1,t));
+  const c=t<.5?[43+(255-43)*t*2,131+(255-131)*t*2,186+(191-186)*t*2]:[255-(255-215)*(t-.5)*2,255-(255-25)*(t-.5)*2,191-(191-28)*(t-.5)*2];
+  return `rgb(${c.map(Math.round)})`;
+}
+function stress(f,h){
+  const useD=$("l_demand").checked,useC=$("l_compl").checked,useR=$("l_reg").checked;
+  let reg=f.reg[h];
+  if($("w_permit").checked && f.reg_source.startsWith("PBD")) reg=1;
+  if(useR && reg===3) return null;
+  let s=0;
+  if(useD) s+=f.demand[h]/Math.max(f.supply,1);
+  if(useC) s+=data.meta.w_c*(f.complaints?f.complaints[h]:0);
+  if(useR && reg===2) s*=1.5;            // permit-only: overflow pressure
+  return s;
+}
+function render(){
+  const h=+$("hour").value;
+  $("hourlabel").textContent=`${DAYS[Math.floor(h/24)]} ${String(h%24).padStart(2,"0")}:00`;
+  layer.eachLayer(l=>{
+    const s=stress(l.feature,h);
+    l.setStyle({color:s===null?"#555":ramp(s/maxStress),weight:5,opacity:.9});
+  });
+}
+fetch("../data/corridor.json").then(r=>r.json()).then(d=>{
+  data=d;
+  maxStress=Math.max(...d.faces.map(f=>Math.max(...f.stress)))||1;
+  layer=L.layerGroup().addTo(map);
+  d.faces.forEach(f=>{
+    const pl=L.polyline(f.geom.map(([x,y])=>[y,x]),{weight:5});
+    pl.feature=f;
+    pl.on("mouseover",()=>{
+      const h=+$("hour").value;
+      $("info").textContent=`${f.id}\nsupply ${f.supply} spaces · ${f.length_ft} ft\nland use ${JSON.stringify(f.landuse)}\nreg ${["open","metered","permit","none"][f.reg[h]]} (${f.reg_source})\nstress ${(stress(f,h)??0).toFixed(2)}`;
+    });
+    layer.addLayer(pl);
+  });
+  const b=d.meta.bbox; map.fitBounds([[b[1],b[0]],[b[3],b[2]]]);
+  ["hour","l_demand","l_reg","l_compl","w_permit"].forEach(id=>$(id).addEventListener("input",render));
+  render();
+});
+</script>
+</body>
+</html>
