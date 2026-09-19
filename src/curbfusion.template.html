@@ -105,6 +105,8 @@
   <canvas id="spark" width="268" height="60"></canvas>
   <div class="story" id="rStory"></div>
   <div class="facts" id="rFacts"></div>
+  <div class="row" style="margin-top:8px"><button id="briefBtn">📋 Copy briefing</button></div>
+  <div id="briefMsg" style="color:var(--acc);font-size:11px;margin-top:4px;min-height:14px"></div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script id="data" type="application/json">__AREAS__</script>
@@ -128,7 +130,7 @@ function setBasemap(name){ if(name===activeBase)return;
   activeBase=name; basemaps[name].addTo(map); if(name==="satellite") satLabels.addTo(map);
   $$(".basemaps button").forEach(b=>b.classList.toggle("active",b.dataset.map===name));}
 $$(".basemaps button").forEach(b=>b.onclick=()=>setBasemap(b.dataset.map));
-let mode="curb",h=+$("hour").value,playing=null,sel=null,whatIf=false,D=null,corridorSlug=null;
+let mode="curb",h=+$("hour").value,playing=null,sel=null,shown=null,whatIf=false,D=null,corridorSlug=null;
 
 // ---------- scoring (mirrors scripts/core/model.py) ----------
 function demand(f,hh){let s=0;for(const c in f.lu){const cv=D.classes[c];if(cv)s+=f.lu[c]*cv.curve[hh];}return s;}
@@ -152,6 +154,7 @@ function ramp(t){t=Math.max(0,Math.min(1,t));
   const c=t<.5?[43+212*t*2,131+124*t*2,186+5*t*2]:[255-40*(t-.5)*2,255-230*(t-.5)*2,191-163*(t-.5)*2];
   return `rgb(${c.map(Math.round)})`;}
 function cap(s){return s?s.charAt(0)+s.slice(1).toLowerCase():s;}
+function luName(k){return (D.classes[k]?.label||k).replace(/\s*\([^)]*\)\s*$/,"");}
 
 // ---------- layers (rebuilt whenever the corridor changes) ----------
 const faceLayer=L.layerGroup().addTo(map), ctxLayer=L.layerGroup().addTo(map), ptLayer=L.layerGroup().addTo(map);
@@ -253,7 +256,7 @@ function narrate(f,v){
     if(masked) bits.push("permit/regulation is in effect right now, cutting eligible parking");
     else if(wi) bits.push("under the what-if scenario, permit hours would apply right now");
     const lu=Object.entries(f.lu).sort((a,b)=>b[1]-a[1])[0];
-    if(lu) bits.push(`the block is mostly ${(D.classes[lu[0]]?.label||lu[0]).toLowerCase()}`);
+    if(lu) bits.push(`the block is mostly ${luName(lu[0]).toLowerCase()}`);
     if(f.adt) bits.push(`~${f.adt.toLocaleString()} vehicles/day pass by`);
     return `${bucket} curb pressure (${v}/100)${bits.length?" — "+bits.join("; "):""}.`;}
   if(mode==="raccoon"){
@@ -264,19 +267,46 @@ function narrate(f,v){
     return `${bucket} raccoon foraging potential (${v}/100)${bits.length?" — "+bits.join("; "):""}.`;}
   if(mode==="combo") return `${bucket} overlap (${v}/100) — curb pressure and raccoon activity are both elevated here right now, a real double-duty block.`;
   return `${bucket} ${modeLabel(mode)} (${v}/100) for this block right now.`;}
-function showFace(f){f=f||sel; if(!f)return; $("right").style.display="block";
+function showFace(f){f=f||sel; if(!f)return; shown=f; $("right").style.display="block";
   const s=series(f), v=s[h];
   $("rTitle").textContent=f.label+(f.pbd?" · PBD":"");
   const c=$("spark").getContext("2d"),W=268,H=60; c.clearRect(0,0,W,H);
   for(let i=0;i<168;i++){const x=i*W/168,y=s[i]==null?H:H-(s[i]/100)*H; c.fillStyle=i===h?"#f5b942":(s[i]==null?"#333":ramp(s[i]/100)); c.fillRect(x,y,W/168-.3,H-y);}
   $("rStory").textContent=narrate(f,v);
-  const lu=Object.entries(f.lu).map(([k,a])=>`${k} ${a.toFixed(2)} ac`).join(", ")||"no parcels";
+  const lu=Object.entries(f.lu).map(([k,a])=>`${luName(k)} ${a.toFixed(2)} ac`).join(", ")||"no parcels";
   $("rFacts").innerHTML=`<b>${modeLabel(mode)}</b>: <b>${v==null?"—":v}</b> · confidence ${f.conf}<br>
     <span class="k">capacity</span> ${f.cap} spaces · <span class="k">ADT</span> ${f.adt??"—"}<br>
     <span class="k">land use</span> ${lu}<br>
     <span class="k">pickup</span> garbage ${f.sched.garbage||"—"} · recycling ${f.sched.recycling||"—"} · heavy ${f.sched.heavy||"—"}<br>
     <span class="k">311</span> trash ${Math.round(f.comp.trash311*100)}% · parking ${Math.round(f.comp.parking311*100)}% · missed ${f.x.missed_collections} · trees ${f.x.tree_311} · roadkill ${f.x.dead_animals}<br>
     <span class="k">rules</span> ${f.rules.join("; ")||"none"}`;}
+function briefing(f){
+  const v=value(f,h), when=`${DAYS[Math.floor(h/24)]} ${String(h%24).padStart(2,"0")}:00`;
+  const lu=Object.entries(f.lu).map(([k,a])=>`${luName(k)} (${a.toFixed(2)} ac)`).join(", ")||"no parcels on file";
+  const link=location.origin+location.pathname+"#c="+corridorSlug+"&m="+mode+"&h="+h+"&b="+activeBase+(whatIf?"&w=1":"");
+  return [
+    `CurbFusion block briefing — ${f.label}`,
+    `Corridor: ${AREAS[corridorSlug].label} · ${when} · ${modeLabel(mode)}`,
+    ``,
+    narrate(f,v),
+    ``,
+    `Score: ${v==null?"—":v}/100 (confidence: ${f.conf})`,
+    `Curb capacity: ${f.cap} spaces · ADT: ${f.adt??"not measured"}`,
+    `Land use: ${lu}`,
+    `Waste pickup: garbage ${f.sched.garbage||"—"}, recycling ${f.sched.recycling||"—"}, heavy trash ${f.sched.heavy||"—"}`,
+    `311 activity: trash ${Math.round((f.comp.trash311||0)*100)}%, parking ${Math.round((f.comp.parking311||0)*100)}%, missed collections ${f.x.missed_collections}, tree requests ${f.x.tree_311}, dead-animal calls ${f.x.dead_animals}`,
+    `Regulation: ${f.rules.join("; ")||"none on file"}`,
+    ``,
+    `Live view: ${link}`,
+    ``,
+    `Scores are proxies over public data, not direct measurements. See docs/MODEL.md and docs/SCORING.md.`,
+  ].join("\n");}
+$("briefBtn").onclick=async()=>{
+  if(!shown){$("briefMsg").textContent="Click a block on the map first.";return;}
+  const text=briefing(shown);
+  try{await navigator.clipboard.writeText(text); $("briefMsg").textContent="Briefing copied — paste into an email or ticket.";}
+  catch(e){$("briefMsg").textContent="Copy failed: "+e.message;}
+  setTimeout(()=>{$("briefMsg").textContent="";},5000);};
 
 // ---------- controls ----------
 const setMode=m=>{mode=m;$("mode").value=m;$("blurb").textContent=(D.modes[m]&&D.modes[m].blurb)||EXTRA_BLURB[m]||modeLabel(m);render();};
