@@ -1,9 +1,39 @@
 {
   "washington_ave": {
-    "label": "Washington Ave (Rice Military / Sixth Ward)",
+    "label": "Washington Ave (Sixth Ward)",
     "path": "data/corridor_lite.json",
     "center": [29.772, -95.40],
     "zoom": 14.5
+  },
+  "first_ward": {
+    "label": "First Ward",
+    "path": "data/areas/first_ward/corridor_lite.json",
+    "center": [29.7735, -95.3726],
+    "zoom": 14.5
+  },
+  "second_ward": {
+    "label": "Second Ward",
+    "path": "data/areas/second_ward/corridor_lite.json",
+    "center": [29.7481, -95.3268],
+    "zoom": 14
+  },
+  "third_ward": {
+    "label": "Third Ward",
+    "path": "data/areas/third_ward/corridor_lite.json",
+    "center": [29.7244, -95.3591],
+    "zoom": 14
+  },
+  "fourth_ward": {
+    "label": "Fourth Ward / Freedmen's Town",
+    "path": "data/areas/fourth_ward/corridor_lite.json",
+    "center": [29.7571, -95.3796],
+    "zoom": 15
+  },
+  "fifth_ward": {
+    "label": "Fifth Ward",
+    "path": "data/areas/fifth_ward/corridor_lite.json",
+    "center": [29.7762, -95.3297],
+    "zoom": 14
   },
   "montrose_westheimer": {
     "label": "Westheimer / Montrose",
