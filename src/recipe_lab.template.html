@@ -33,12 +33,21 @@
   .legend .bar{flex:1;height:8px;border-radius:4px;background:linear-gradient(90deg,#2b83ba,#ffffbf,#d7191c)}
   @media (max-width:900px){#wrap{grid-template-columns:1fr;grid-template-rows:55% 45%}}
   .tiles-dark{filter:invert(1) hue-rotate(180deg) brightness(.92) contrast(.9) saturate(.7)}
+  .cfnav{display:flex;gap:4px;margin:0 0 10px}
+  .cfnav a{flex:1;text-align:center;color:var(--mut);text-decoration:none;font-size:12px;padding:6px 4px;border-radius:8px;border:1px solid var(--line);background:#1b1f27}
+  .cfnav a.on{background:#f5b942;color:#1a1300;font-weight:600;border-color:#f5b942}
+  .cfnav a:hover:not(.on){color:var(--fg)}
 </style>
 </head>
 <body>
 <div id="wrap">
 <div id="lab">
   <h1>🧪 Recipe Lab<small>CurbFusion · describe a need as weights over the curb catalog</small></h1>
+  <nav class="cfnav">
+    <a href="curbfusion.html">🗺️ Map</a>
+    <a href="recipe_lab.html" class="on">🧪 Recipe Lab</a>
+    <a href="recipe_agent.html">🤖 Recipe Agent</a>
+  </nav>
   <h2>Start from a recipe</h2>
   <div class="chips" id="preset"></div>
   <h2>Name it</h2>

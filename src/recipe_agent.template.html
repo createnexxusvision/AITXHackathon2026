@@ -10,6 +10,10 @@
   body{margin:0;background:var(--bg);color:var(--fg);font:13.5px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
   .wrap{max-width:1100px;margin:0 auto;padding:18px 16px 40px}
   h1{font-size:20px;margin:0} h1 small{display:block;font-size:12px;color:var(--mut);font-weight:400}
+  .cfnav{display:inline-flex;gap:4px;margin:12px 0 4px}
+  .cfnav a{text-align:center;color:var(--mut);text-decoration:none;font-size:12px;padding:6px 12px;border-radius:8px;border:1px solid var(--line);background:#1b1f27}
+  .cfnav a.on{background:#f5b942;color:#1a1300;font-weight:600;border-color:#f5b942}
+  .cfnav a:hover:not(.on){color:var(--fg)}
   .ask{display:flex;gap:8px;margin:14px 0}
   .ask input{flex:1;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit}
   button{background:#1b1f27;color:var(--fg);border:1px solid var(--line);border-radius:9px;padding:8px 12px;font:inherit;cursor:pointer}
@@ -43,6 +47,11 @@
 <body>
 <div class="wrap">
   <h1>🦝 CurbFusion Recipe Agent<small>Describe a need. The agent picks datasets, signs and weights them, and sets when it applies. Tick, drag, name it, ship it.</small></h1>
+  <nav class="cfnav">
+    <a href="curbfusion.html">🗺️ Map</a>
+    <a href="recipe_lab.html">🧪 Recipe Lab</a>
+    <a href="recipe_agent.html" class="on">🤖 Recipe Agent</a>
+  </nav>
   <div class="examples" id="premade" style="margin:10px 0 2px"></div>
   <div class="ask">
     <input id="need" placeholder="e.g. delivery driver with a box truck, mornings, hates tickets">

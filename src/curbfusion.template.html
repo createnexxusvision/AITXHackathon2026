@@ -57,6 +57,10 @@
   .story{background:#1b1f27;border-left:3px solid var(--acc);border-radius:0 8px 8px 0;padding:8px 10px;font-size:12.5px;line-height:1.45;margin:8px 0}
   #shareMsg{color:var(--acc);font-size:11px;margin-top:4px;min-height:14px}
   #shareUrl{width:100%;margin-top:4px}
+  .cfnav{display:flex;gap:4px;margin:0 0 10px}
+  .cfnav a{flex:1;text-align:center;color:var(--mut);text-decoration:none;font-size:12px;padding:6px 4px;border-radius:8px;border:1px solid var(--line);background:#1b1f27}
+  .cfnav a.on{background:var(--acc);color:#1a1300;font-weight:600;border-color:var(--acc)}
+  .cfnav a:hover:not(.on){color:var(--fg)}
 </style>
 </head>
 <body>
@@ -64,6 +68,11 @@
 <div id="skytint"></div>
 <div id="left">
   <h1><span class="raccoon">🦝</span>CurbFusion<small>Team Trash Pandas · Houston open data, block face × hour of week</small></h1>
+  <nav class="cfnav">
+    <a href="curbfusion.html" class="on">🗺️ Map</a>
+    <a href="recipe_lab.html">🧪 Recipe Lab</a>
+    <a href="recipe_agent.html">🤖 Recipe Agent</a>
+  </nav>
   <p class="hint">Drag the slider to fast-forward through the week. Switch the map below between streets and satellite, and watch it shift from day to evening to night as time passes.</p>
   <select id="corridor"></select>
   <div class="searchrow">
