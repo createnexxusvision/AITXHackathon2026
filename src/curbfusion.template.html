@@ -50,7 +50,13 @@
   .basemaps button.active{background:var(--acc);color:#1a1300;border-color:var(--acc);font-weight:600}
   #timeicon{font-size:16px;margin-right:2px;vertical-align:-2px}
   #timeband{color:var(--mut);font-size:11.5px}
-
+  .searchrow{display:flex;gap:6px;margin:0 0 6px}
+  .searchrow input{flex:1;background:#1b1f27;color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font:inherit;min-width:0}
+  #searchMsg{color:var(--mut);font-size:11.5px;min-height:15px;margin:0 0 8px}
+  #corridor{width:100%;margin:0 0 8px}
+  .story{background:#1b1f27;border-left:3px solid var(--acc);border-radius:0 8px 8px 0;padding:8px 10px;font-size:12.5px;line-height:1.45;margin:8px 0}
+  #shareMsg{color:var(--acc);font-size:11px;margin-top:4px;min-height:14px}
+  #shareUrl{width:100%;margin-top:4px}
 </style>
 </head>
 <body>
@@ -59,6 +65,12 @@
 <div id="left">
   <h1><span class="raccoon">🦝</span>CurbFusion<small>Team Trash Pandas · Houston open data, block face × hour of week</small></h1>
   <p class="hint">Drag the slider to fast-forward through the week. Switch the map below between streets and satellite, and watch it shift from day to evening to night as time passes.</p>
+  <select id="corridor"></select>
+  <div class="searchrow">
+    <input id="search" type="text" placeholder="Search a Houston address or place…" autocomplete="off">
+    <button id="searchBtn">🔍</button>
+  </div>
+  <div id="searchMsg"></div>
   <div class="basemaps">
     <button data-map="streets" class="active">🗺️ Streets</button>
     <button data-map="satellite">🛰️ Satellite</button>
@@ -69,20 +81,26 @@
   <div class="row"><span><span id="timeicon">☀️</span><span id="hourlabel"></span> <span id="timeband"></span></span><button class="play" id="play">▶ play week</button></div>
   <div class="presets" id="presets"></div>
   <div class="legend"><span>low</span><div class="bar"></div><span>high</span></div>
+  <div id="raccoonNote" class="hint" style="display:none">🦝 Raccoon mode needs 311/trash data not yet pulled for this corridor — only curb-pressure indices are available here so far.</div>
   <label class="chk"><input type="checkbox" id="pts"> show 311 points for this mode</label>
-  <label class="chk"><input type="checkbox" id="pbdOnly"> Washington Ave PBD only</label>
+  <label class="chk"><input type="checkbox" id="pbdOnly"> <span id="pbdOnlyLabel">Washington Ave PBD only</span></label>
+  <label class="chk"><input type="checkbox" id="whatIf"> 🧪 What if: permit hours applied every night, not just Thu–Sun?</label>
+  <div class="row" style="margin-top:8px"><button id="shareBtn">🔗 Share this view</button></div>
+  <div id="shareMsg"></div>
+  <input id="shareUrl" type="text" readonly style="display:none">
   <div id="top"></div>
   <div class="foot">Scores are proxies × assumptions, not measurements. Sources: HCAD, COH centerlines, RPP, Public Works ADT, METRO GTFS, 311, Solid Waste pickup areas. See docs/MODEL.md &amp; docs/SCORING.md.</div>
 </div>
 <div id="right">
   <h2 id="rTitle"></h2>
   <canvas id="spark" width="268" height="60"></canvas>
+  <div class="story" id="rStory"></div>
   <div class="facts" id="rFacts"></div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script id="data" type="application/json">__DATA__</script>
+<script id="data" type="application/json">__AREAS__</script>
 <script>
-const D=JSON.parse(document.getElementById("data").textContent);
+const AREAS=JSON.parse(document.getElementById("data").textContent);
 const DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 const $=id=>document.getElementById(id);
 const $$=sel=>document.querySelectorAll(sel);
@@ -101,30 +119,70 @@ function setBasemap(name){ if(name===activeBase)return;
   activeBase=name; basemaps[name].addTo(map); if(name==="satellite") satLabels.addTo(map);
   $$(".basemaps button").forEach(b=>b.classList.toggle("active",b.dataset.map===name));}
 $$(".basemaps button").forEach(b=>b.onclick=()=>setBasemap(b.dataset.map));
-let mode="curb",h=+$("hour").value,playing=null,sel=null;
+let mode="curb",h=+$("hour").value,playing=null,sel=null,whatIf=false,D=null,corridorSlug=null;
 
 // ---------- scoring (mirrors scripts/core/model.py) ----------
-const N=D.normalization;
 function demand(f,hh){let s=0;for(const c in f.lu){const cv=D.classes[c];if(cv)s+=f.lu[c]*cv.curve[hh];}return s;}
+function nightWindow(hh){const hod=hh%24; return hod>=18||hod<2;}
 function pressure(f,hh){ if(!Object.keys(f.lu).length) return null;
-  const Dv=Math.min(1,demand(f,hh)/(N.demand_p95||1)); const S=(f.mask&&f.mask[hh]==="1")?0:1;
+  const Dv=Math.min(1,demand(f,hh)/(D.normalization.demand_p95||1));
+  let masked=f.mask&&f.mask[hh]==="1";
+  if(whatIf && !masked && nightWindow(hh)) masked=true; // what-if: permit hours extended to every night
+  const S=masked?0:1;
   return Math.round(100*(0.6*Dv+0.25*(1-S))/0.85);}
 function forage(f,hh){ return f.fb==null?null:Math.round(100*f.fb*D.raccoon_curve[hh]); }
 function recipe(f,rid,hh){const sc=f.sc[rid];if(!sc)return null;let c=0;for(const k of sc.curves)c=Math.max(c,D.curve_table[k][hh]);return Math.round(100*sc.base*c);}
-function value(f,hh){const key=D.modes[mode].index; if(key==="pressure_index")return pressure(f,hh); if(key==="forage_index")return forage(f,hh); return recipe(f,key.slice(7),hh);}
+function value(f,hh){
+  if(mode==="combo"){const p=pressure(f,hh),r=forage(f,hh);return(p==null||r==null)?null:Math.min(p,r);}
+  const md=D.modes[mode]; if(!md) return null;
+  if(md.index==="pressure_index")return pressure(f,hh);
+  if(md.index==="forage_index")return forage(f,hh);
+  return recipe(f,md.index.slice(7),hh);}
 function series(f){const out=[];for(let i=0;i<168;i++)out.push(value(f,i));return out;}
 function ramp(t){t=Math.max(0,Math.min(1,t));
   const c=t<.5?[43+212*t*2,131+124*t*2,186+5*t*2]:[255-40*(t-.5)*2,255-230*(t-.5)*2,191-163*(t-.5)*2];
   return `rgb(${c.map(Math.round)})`;}
+function cap(s){return s?s.charAt(0)+s.slice(1).toLowerCase():s;}
 
-// ---------- layers ----------
-const faceLayer=L.layerGroup().addTo(map), ptLayer=L.layerGroup().addTo(map);
-const polys=D.faces.map(f=>{const pl=L.polyline(f.g.map(([x,y])=>[y,x]),{weight:3,opacity:.9});pl.f=f;
-  pl.on("click",()=>{sel=f;showFace();}); pl.on("mouseover",()=>{if(!sel)showFace(f);}); faceLayer.addLayer(pl); return pl;});
-// faint road context from the faces themselves (works with no tiles)
-const ctx=L.layerGroup().addTo(map); D.faces.forEach(f=>ctx.addLayer(L.polyline(f.g.map(([x,y])=>[y,x]),{color:"#3a3f4a",weight:7,opacity:.35,interactive:false})));
-const home=()=>{map.invalidateSize();map.fitBounds([[29.758,-95.433],[29.786,-95.367]],{padding:[10,10]});};
-home(); setTimeout(home,300); window.addEventListener("resize",()=>setTimeout(home,100));
+// ---------- layers (rebuilt whenever the corridor changes) ----------
+const faceLayer=L.layerGroup().addTo(map), ctxLayer=L.layerGroup().addTo(map), ptLayer=L.layerGroup().addTo(map);
+let polys=[];
+function boundsOf(data){let a=90,b=-90,c=180,d=-180;
+  data.faces.forEach(f=>f.g.forEach(([x,y])=>{if(y<a)a=y;if(y>b)b=y;if(x<c)c=x;if(x>d)d=x;}));
+  return L.latLngBounds([a,c],[b,d]);}
+for(const slug in AREAS) AREAS[slug].bounds=boundsOf(AREAS[slug].data);
+function populateCorridorSelect(){
+  $("corridor").innerHTML=Object.entries(AREAS).map(([slug,a])=>`<option value="${slug}">${a.label}</option>`).join("");}
+function populateModeSelect(){
+  const hasRaccoon=D.faces.some(f=>f.fb!=null);
+  const groups={contract:"📐 Contract indices",human:"🧑 Humans",raccoon:"🦝 Raccoons",combo:"🔀 Combined"};
+  const opts={contract:[],human:[],raccoon:[],combo:hasRaccoon?['<option value="combo">🔀 Parking + raccoon overlap</option>']:[]};
+  for(const [id,m] of Object.entries(D.modes)){
+    if((id==="raccoon"||m.audience==="raccoon")&&!hasRaccoon) continue;
+    const g=id==="curb"||id==="raccoon"?"contract":(m.audience||"human");
+    opts[g].push(`<option value="${id}">${m.label}</option>`);}
+  $("mode").innerHTML=Object.keys(groups).filter(g=>opts[g].length).map(g=>`<optgroup label="${groups[g]}">${opts[g].join("")}</optgroup>`).join("");
+  $("raccoonNote").style.display=hasRaccoon?"none":"block";}
+function buildPresets(){
+  let html=D.presets.map((p,i)=>`<button data-i="${i}">${p.label}</button>`).join("");
+  if(D.modes.raccoon_family) html+=`<button data-i="g">🗑️ Wed 10 PM — garbage night</button>`;
+  $("presets").innerHTML=html;
+  $("presets").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+    if(b.dataset.i==="g"){setMode("raccoon_family");h=2*24+22;}
+    else{const p=D.presets[+b.dataset.i];setMode(p.mode);h=p.h;}
+    $("hour").value=h;render();});}
+function loadCorridor(slug,opts){
+  opts=opts||{}; corridorSlug=slug; D=AREAS[slug].data; $("corridor").value=slug;
+  faceLayer.clearLayers(); ctxLayer.clearLayers(); ptLayer.clearLayers(); sel=null; $("right").style.display="none";
+  polys=D.faces.map(f=>{const pl=L.polyline(f.g.map(([x,y])=>[y,x]),{weight:3,opacity:.9});pl.f=f;
+    pl.on("click",()=>{sel=f;showFace();}); pl.on("mouseover",()=>{if(!sel)showFace(f);}); faceLayer.addLayer(pl); return pl;});
+  D.faces.forEach(f=>ctxLayer.addLayer(L.polyline(f.g.map(([x,y])=>[y,x]),{color:"#3a3f4a",weight:7,opacity:.35,interactive:false})));
+  $("pbdOnlyLabel").textContent=AREAS[slug].label+" core area only";
+  populateModeSelect();
+  const avail=Object.keys(D.modes).concat(D.faces.some(f=>f.fb!=null)?["combo"]:[]);
+  if(!avail.includes(mode)) mode=avail[0]||"curb";
+  if(!opts.skipFit){map.invalidateSize();map.fitBounds(AREAS[slug].bounds.pad(.1));}
+  buildPresets(); setMode(mode);}
 
 // one keyframe per hour of day: night is not flat -- 2 AM reads deeper/bluer than 5 AM,
 // and color swings warm through sunrise/sunset rather than snapping between three flat states.
@@ -171,16 +229,40 @@ function render(){
   drawPoints(); if(sel)showFace();
 }
 function drawPoints(){ptLayer.clearLayers(); if(!$("pts").checked)return;
-  const aud=D.modes[mode].audience||(mode==="curb"?"human":"raccoon"); const kind=aud==="human"?"parking":"trash";
-  D.points.sr311.filter(p=>p.kind===kind).forEach(p=>L.circleMarker([p.lat,p.lon],{radius:2.5,color:"#fff",weight:1,fillOpacity:.7})
+  const md=D.modes[mode]; let kind=null;
+  if(mode!=="combo"){const aud=(md&&md.audience)||(mode==="curb"?"human":"raccoon"); kind=aud==="human"?"parking":"trash";}
+  D.points.sr311.filter(p=>kind?p.kind===kind:true).forEach(p=>L.circleMarker([p.lat,p.lon],{radius:2.5,color:"#fff",weight:1,fillOpacity:.7})
     .bindTooltip(`${p.type} · ${DAYS[Math.floor(p.h/24)]} ${p.h%24}:00`).addTo(ptLayer));}
+const EXTRA_BLURB={combo:"Blocks where curb-parking pressure and raccoon foraging potential are BOTH elevated at the same hour — likely double-duty problem spots worth one site visit instead of two."};
+function modeLabel(m){return (D.modes[m]&&D.modes[m].label)||(m==="combo"?"Combined risk":m);}
+function narrate(f,v){
+  if(v==null) return "No score is available for this block face at this hour — try another time or mode.";
+  const bucket=v>=80?"Very high":v>=60?"High":v>=35?"Moderate":"Low";
+  if(mode==="curb"){
+    const masked=f.mask&&f.mask[h]==="1", wi=whatIf&&!masked&&nightWindow(h);
+    const bits=[];
+    if(masked) bits.push("permit/regulation is in effect right now, cutting eligible parking");
+    else if(wi) bits.push("under the what-if scenario, permit hours would apply right now");
+    const lu=Object.entries(f.lu).sort((a,b)=>b[1]-a[1])[0];
+    if(lu) bits.push(`the block is mostly ${(D.classes[lu[0]]?.label||lu[0]).toLowerCase()}`);
+    if(f.adt) bits.push(`~${f.adt.toLocaleString()} vehicles/day pass by`);
+    return `${bucket} curb pressure (${v}/100)${bits.length?" — "+bits.join("; "):""}.`;}
+  if(mode==="raccoon"){
+    const bits=[];
+    if(f.sched&&f.sched.garbage) bits.push(`garbage day is ${cap(f.sched.garbage)}`);
+    if(f.x&&f.x.missed_collections) bits.push(`${f.x.missed_collections} missed collection${f.x.missed_collections>1?"s":""} reported nearby`);
+    if(f.comp&&f.comp.trash311>0.3) bits.push("frequent trash-related 311 reports");
+    return `${bucket} raccoon foraging potential (${v}/100)${bits.length?" — "+bits.join("; "):""}.`;}
+  if(mode==="combo") return `${bucket} overlap (${v}/100) — curb pressure and raccoon activity are both elevated here right now, a real double-duty block.`;
+  return `${bucket} ${modeLabel(mode)} (${v}/100) for this block right now.`;}
 function showFace(f){f=f||sel; if(!f)return; $("right").style.display="block";
   const s=series(f), v=s[h];
   $("rTitle").textContent=f.label+(f.pbd?" · PBD":"");
   const c=$("spark").getContext("2d"),W=268,H=60; c.clearRect(0,0,W,H);
   for(let i=0;i<168;i++){const x=i*W/168,y=s[i]==null?H:H-(s[i]/100)*H; c.fillStyle=i===h?"#f5b942":(s[i]==null?"#333":ramp(s[i]/100)); c.fillRect(x,y,W/168-.3,H-y);}
+  $("rStory").textContent=narrate(f,v);
   const lu=Object.entries(f.lu).map(([k,a])=>`${k} ${a.toFixed(2)} ac`).join(", ")||"no parcels";
-  $("rFacts").innerHTML=`<b>${D.modes[mode].label}</b>: <b>${v==null?"—":v}</b> · confidence ${f.conf}<br>
+  $("rFacts").innerHTML=`<b>${modeLabel(mode)}</b>: <b>${v==null?"—":v}</b> · confidence ${f.conf}<br>
     <span class="k">capacity</span> ${f.cap} spaces · <span class="k">ADT</span> ${f.adt??"—"}<br>
     <span class="k">land use</span> ${lu}<br>
     <span class="k">pickup</span> garbage ${f.sched.garbage||"—"} · recycling ${f.sched.recycling||"—"} · heavy ${f.sched.heavy||"—"}<br>
@@ -188,22 +270,55 @@ function showFace(f){f=f||sel; if(!f)return; $("right").style.display="block";
     <span class="k">rules</span> ${f.rules.join("; ")||"none"}`;}
 
 // ---------- controls ----------
-const groups={raccoon:"🦝 Raccoons",human:"🧑 Humans",contract:"📐 Contract indices"};
-const opts={raccoon:[],human:[],contract:[]};
-for(const [id,m] of Object.entries(D.modes)){const g=id==="curb"||id==="raccoon"?"contract":(m.audience||"human");opts[g].push(`<option value="${id}">${m.label}</option>`);}
-$("mode").innerHTML=Object.keys(groups).map(g=>`<optgroup label="${groups[g]}">${opts[g].join("")}</optgroup>`).join("");
-$("mode").value=mode;
-const setMode=m=>{mode=m;$("mode").value=m;$("blurb").textContent=D.modes[m].blurb||D.modes[m].label;render();};
+const setMode=m=>{mode=m;$("mode").value=m;$("blurb").textContent=(D.modes[m]&&D.modes[m].blurb)||EXTRA_BLURB[m]||modeLabel(m);render();};
 $("mode").onchange=e=>setMode(e.target.value);
 $("hour").oninput=e=>{h=+e.target.value;render();};
 $("pts").onchange=render; $("pbdOnly").onchange=render;
-$("presets").innerHTML=D.presets.map((p,i)=>`<button data-i="${i}">${p.label}</button>`).join("")+
-  `<button data-i="g">🗑️ Wed 10 PM — garbage night (Heights)</button>`;
-$("presets").querySelectorAll("button").forEach(b=>b.onclick=()=>{ if(b.dataset.i==="g"){setMode("raccoon_family");h=2*24+22;} else {const p=D.presets[+b.dataset.i];setMode(p.mode);h=p.h;} $("hour").value=h;render();});
+$("whatIf").onchange=e=>{whatIf=e.target.checked;render();};
 $("play").onclick=()=>{ if(playing){clearInterval(playing);playing=null;$("play").textContent="▶ play week";return;}
   $("play").textContent="⏸ pause"; playing=setInterval(()=>{h=(h+1)%168;$("hour").value=h;render();},180);};
 map.on("click",()=>{sel=null;});
-setMode(mode);
+
+// ---------- corridor picker ----------
+populateCorridorSelect();
+$("corridor").onchange=e=>loadCorridor(e.target.value);
+
+// ---------- address / place search ----------
+async function doSearch(){
+  const q=$("search").value.trim(); if(!q) return;
+  $("searchMsg").textContent="Searching…";
+  try{
+    const url=`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=us&q=${encodeURIComponent(q+", Houston, TX")}`;
+    const hits=await (await fetch(url,{headers:{Accept:"application/json"}})).json();
+    if(!hits.length){$("searchMsg").textContent="No match found — try a fuller address.";return;}
+    const ll=[+hits[0].lat,+hits[0].lon];
+    map.setView(ll,17);
+    L.popup().setLatLng(ll).setContent(hits[0].display_name.split(",").slice(0,3).join(",")).openOn(map);
+    if(AREAS[corridorSlug].bounds.pad(.15).contains(ll)){$("searchMsg").textContent="Found it — inside the modeled corridor.";return;}
+    const other=Object.entries(AREAS).find(([s,a])=>s!==corridorSlug&&a.bounds.pad(.15).contains(ll));
+    $("searchMsg").textContent=other?`Found it, but that's in "${other[1].label}" — switch corridors above to see its data.`
+      :"Found it, but this block isn't modeled yet — only the corridor(s) above have score data so far.";
+  }catch(e){$("searchMsg").textContent="Search failed — check your connection.";}}
+$("searchBtn").onclick=doSearch;
+$("search").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();doSearch();}});
+
+// ---------- share link ----------
+$("shareBtn").onclick=async()=>{
+  history.replaceState(null,"","#c="+corridorSlug+"&m="+mode+"&h="+h+"&b="+activeBase+(whatIf?"&w=1":""));
+  const url=location.href;
+  try{await navigator.clipboard.writeText(url); $("shareUrl").style.display="none"; $("shareMsg").textContent="Link copied to clipboard!";}
+  catch(e){$("shareUrl").style.display="block"; $("shareUrl").value=url; $("shareUrl").focus(); $("shareUrl").select(); $("shareMsg").textContent="Copy failed — link selected above, press Ctrl/Cmd+C.";}
+  setTimeout(()=>{$("shareMsg").textContent="";},5000);};
+
+// ---------- init (with optional #c=&m=&h=&b=&w= from a shared link) ----------
+const startParams=new URLSearchParams(location.hash.slice(1));
+const startCorridor=(startParams.get("c")&&AREAS[startParams.get("c")])?startParams.get("c"):Object.keys(AREAS)[0];
+if(startParams.get("b")&&basemaps[startParams.get("b")]) setBasemap(startParams.get("b"));
+if(startParams.get("w")==="1"){whatIf=true;$("whatIf").checked=true;}
+if(startParams.get("m")) mode=startParams.get("m");
+if(startParams.get("h")) {h=+startParams.get("h"); $("hour").value=h;}
+loadCorridor(startCorridor);
+window.addEventListener("resize",()=>map.invalidateSize());
 </script>
 </body>
 </html>

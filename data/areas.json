@@ -1,0 +1,8 @@
+{
+  "washington_ave": {
+    "label": "Washington Ave (Rice Military / Sixth Ward)",
+    "path": "data/corridor_lite.json",
+    "center": [29.772, -95.40],
+    "zoom": 14.5
+  }
+}
