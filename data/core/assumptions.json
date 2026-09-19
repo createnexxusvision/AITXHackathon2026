@@ -1,0 +1,75 @@
+{
+ "A01_face_offset_ft": {
+  "value": 26.0,
+  "note": "display offset from centerline to face line; not a measured curb"
+ },
+ "A02_space_length_ft": {
+  "value": 22.0,
+  "note": "gross_capacity = floor(length_ft/22); rough, not legal inventory"
+ },
+ "A03_parcel_join": {
+  "value": "centroid-nearest face within 400 ft, same side",
+  "note": "fallback method; confidence recorded"
+ },
+ "A04_demand_vpa": {
+  "value": {
+   "F1": 40,
+   "A1": 4,
+   "B1": 8,
+   "B2": 12
+  },
+  "note": "hypothetical vehicles per acre at curve peak"
+ },
+ "A05_demand_curves": {
+  "value": "see classes[]",
+  "note": "hypothetical hour-of-week lookup; F1 treated as generic commercial, NOT verified nightlife"
+ },
+ "A06_pressure_weights": {
+  "value": {
+   "D": 0.6,
+   "S": 0.25,
+   "C": 0.15
+  },
+  "note": "illustrative; C dropped and weights renormalised when complaints coverage != complete_window"
+ },
+ "A07_demand_p95": {
+  "value": 54,
+  "note": "frozen at build; 95th percentile of demand_proxy over analysis-area faces"
+ },
+ "A08_pbd_permit_rule": {
+  "value": "THU-SUN 18:00-02:00 permit-only",
+  "note": "UNVERIFIED scenario assumption from houstontx.gov/parking/washingtonavenue.html; not baseline law"
+ },
+ "A09_rpp_semantics": {
+  "value": "start-day",
+  "note": "WED-SAT 23:00-05:00 = Wed 23 .. Thu 04"
+ },
+ "A10_bus_stop_exclusion": {
+  "value": null,
+  "note": "no verified length; stops are context only, no supply deduction"
+ },
+ "A11_adt_join": {
+  "value": "same street token, nearest station <= 1500 ft",
+  "note": "context; latest count only"
+ },
+ "A12_311_join": {
+  "value": "nearest face <= 300 ft by lat/lon",
+  "note": "coverage partial_snapshot; report-time bins"
+ },
+ "A13_raccoon_trash_re": {
+  "value": "trash|garbage|dump|heavy trash|container|recycl|weeds|nuisance|dead animal",
+  "note": "311 title filter for forage signal"
+ },
+ "A14_raccoon_weights": {
+  "value": {
+   "T": 0.5,
+   "R": 0.3,
+   "F": 0.2
+  },
+  "note": "trash-311 exposure, residential acres (bins), commercial acres (dumpsters); hypothetical"
+ },
+ "A15_raccoon_curve": {
+  "value": "nocturnal 21:00-05:00 peak, weekend +20%",
+  "note": "raccoon activity assumption; not ecological data"
+ }
+}

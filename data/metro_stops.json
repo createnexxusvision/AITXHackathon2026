@@ -1,0 +1,1226 @@
+[
+ {
+  "id": "238",
+  "name": "Capitol St @ Bagby St",
+  "lon": -95.368907,
+  "lat": 29.762335
+ },
+ {
+  "id": "346",
+  "name": "Lamar St @ Smith St",
+  "lon": -95.368807,
+  "lat": 29.758285
+ },
+ {
+  "id": "456",
+  "name": "Shepherd Dr @ Memorial Dr",
+  "lon": -95.408842,
+  "lat": 29.762233
+ },
+ {
+  "id": "457",
+  "name": "Shepherd Dr @ Dickson St",
+  "lon": -95.40923,
+  "lat": 29.76426
+ },
+ {
+  "id": "458",
+  "name": "Shepherd Dr @ Feagan St",
+  "lon": -95.409322,
+  "lat": 29.766011
+ },
+ {
+  "id": "459",
+  "name": "Shepherd Dr @ Blossom St",
+  "lon": -95.409355,
+  "lat": 29.767458
+ },
+ {
+  "id": "460",
+  "name": "Shepherd Dr @ Rose St",
+  "lon": -95.409376,
+  "lat": 29.768924
+ },
+ {
+  "id": "461",
+  "name": "Shepherd Dr @ Washington Ave",
+  "lon": -95.409409,
+  "lat": 29.770345
+ },
+ {
+  "id": "462",
+  "name": "Shepherd Dr @ Center St",
+  "lon": -95.409422,
+  "lat": 29.771554
+ },
+ {
+  "id": "463",
+  "name": "Shepherd Dr @ Eli",
+  "lon": -95.40946,
+  "lat": 29.773295
+ },
+ {
+  "id": "464",
+  "name": "Shepherd Dr @ Eigel St",
+  "lon": -95.409467,
+  "lat": 29.774771
+ },
+ {
+  "id": "465",
+  "name": "Shepherd Dr @ Nolda St",
+  "lon": -95.40951,
+  "lat": 29.775902
+ },
+ {
+  "id": "467",
+  "name": "Washington Ave @ Patterson St",
+  "lon": -95.406308,
+  "lat": 29.770437
+ },
+ {
+  "id": "469",
+  "name": "Washington Ave @ Jackson Hill St",
+  "lon": -95.401404,
+  "lat": 29.769922
+ },
+ {
+  "id": "470",
+  "name": "Washington Ave @ Heights Blvd",
+  "lon": -95.396339,
+  "lat": 29.769347
+ },
+ {
+  "id": "472",
+  "name": "Washington Ave @ Studemont St",
+  "lon": -95.392079,
+  "lat": 29.768894
+ },
+ {
+  "id": "473",
+  "name": "Washington Ave @ National St",
+  "lon": -95.388439,
+  "lat": 29.768635
+ },
+ {
+  "id": "474",
+  "name": "Washington Ave @ Custus St",
+  "lon": -95.386103,
+  "lat": 29.768439
+ },
+ {
+  "id": "475",
+  "name": "Washington Ave @ Sawyer St",
+  "lon": -95.383064,
+  "lat": 29.768231
+ },
+ {
+  "id": "476",
+  "name": "Washington Ave @ Taylor St",
+  "lon": -95.381746,
+  "lat": 29.768168
+ },
+ {
+  "id": "478",
+  "name": "Washington Ave @ Silver St",
+  "lon": -95.377283,
+  "lat": 29.767705
+ },
+ {
+  "id": "479",
+  "name": "Washington Ave @ Colorado",
+  "lon": -95.374746,
+  "lat": 29.767439
+ },
+ {
+  "id": "480",
+  "name": "Preston St @ Artesian Pl",
+  "lon": -95.36892,
+  "lat": 29.765956
+ },
+ {
+  "id": "481",
+  "name": "Washington Ave @ Preston St",
+  "lon": -95.369747,
+  "lat": 29.766607
+ },
+ {
+  "id": "482",
+  "name": "Washinton Ave @ Hickory St",
+  "lon": -95.3714,
+  "lat": 29.767223
+ },
+ {
+  "id": "483",
+  "name": "Washington Ave @ Ash Pl",
+  "lon": -95.37417,
+  "lat": 29.767561
+ },
+ {
+  "id": "484",
+  "name": "Washington Ave @ Silver St",
+  "lon": -95.376956,
+  "lat": 29.767849
+ },
+ {
+  "id": "485",
+  "name": "Washington Ave @ Henderson St",
+  "lon": -95.379844,
+  "lat": 29.768152
+ },
+ {
+  "id": "486",
+  "name": "Washington Ave @ Taylor St",
+  "lon": -95.381542,
+  "lat": 29.768324
+ },
+ {
+  "id": "487",
+  "name": "Washington Ave @ Brashear St",
+  "lon": -95.383752,
+  "lat": 29.768442
+ },
+ {
+  "id": "488",
+  "name": "Washington Ave @ Custus St",
+  "lon": -95.386546,
+  "lat": 29.76866
+ },
+ {
+  "id": "490",
+  "name": "Washington Ave @ Studemont St",
+  "lon": -95.391476,
+  "lat": 29.76901
+ },
+ {
+  "id": "492",
+  "name": "Washington Ave @ Heights Blvd",
+  "lon": -95.396504,
+  "lat": 29.769557
+ },
+ {
+  "id": "493",
+  "name": "Washington Ave @ Yale St",
+  "lon": -95.399061,
+  "lat": 29.769829
+ },
+ {
+  "id": "494",
+  "name": "Washington Ave @ Bonner St",
+  "lon": -95.402124,
+  "lat": 29.770162
+ },
+ {
+  "id": "496",
+  "name": "Washington Ave @ Patterson St",
+  "lon": -95.406442,
+  "lat": 29.770578
+ },
+ {
+  "id": "498",
+  "name": "Washington Ave @ Shepherd Dr",
+  "lon": -95.409353,
+  "lat": 29.770533
+ },
+ {
+  "id": "499",
+  "name": "Heights Blvd @ Koehler St",
+  "lon": -95.397585,
+  "lat": 29.774397
+ },
+ {
+  "id": "500",
+  "name": "Heights Blvd @ Koehler St Mb1",
+  "lon": -95.397548,
+  "lat": 29.772785
+ },
+ {
+  "id": "502",
+  "name": "Heights Blvd @ Center St",
+  "lon": -95.397516,
+  "lat": 29.770517
+ },
+ {
+  "id": "503",
+  "name": "S Heights Blvd @ Barnes St",
+  "lon": -95.39729,
+  "lat": 29.768641
+ },
+ {
+  "id": "504",
+  "name": "S Heights Blvd @ Feagan St",
+  "lon": -95.397449,
+  "lat": 29.766647
+ },
+ {
+  "id": "505",
+  "name": "Waugh Dr @ Allen Pkwy",
+  "lon": -95.398312,
+  "lat": 29.760517
+ },
+ {
+  "id": "506",
+  "name": "Waugh Dr @ D'Amico St",
+  "lon": -95.398286,
+  "lat": 29.759666
+ },
+ {
+  "id": "578",
+  "name": "Louisiana St @ McKinney St",
+  "lon": -95.367523,
+  "lat": 29.758358
+ },
+ {
+  "id": "645",
+  "name": "Bagby St @ Dallas St",
+  "lon": -95.371257,
+  "lat": 29.758736
+ },
+ {
+  "id": "671",
+  "name": "Smith St @ Rusk St",
+  "lon": -95.36715,
+  "lat": 29.76073
+ },
+ {
+  "id": "672",
+  "name": "Smith St @ Walker St",
+  "lon": -95.367767,
+  "lat": 29.759938
+ },
+ {
+  "id": "673",
+  "name": "Smith St @ McKinney St",
+  "lon": -95.368355,
+  "lat": 29.759197
+ },
+ {
+  "id": "674",
+  "name": "Smith St @ Lamar St",
+  "lon": -95.368958,
+  "lat": 29.758441
+ },
+ {
+  "id": "683",
+  "name": "Bagby St @ Lamar St",
+  "lon": -95.370689,
+  "lat": 29.759162
+ },
+ {
+  "id": "2075",
+  "name": "Houston Ave @ Spring",
+  "lon": -95.372283,
+  "lat": 29.775108
+ },
+ {
+  "id": "2076",
+  "name": "Houston Ave @ Alamo St",
+  "lon": -95.372338,
+  "lat": 29.776587
+ },
+ {
+  "id": "2077",
+  "name": "Houston Ave @ Alamo St",
+  "lon": -95.372509,
+  "lat": 29.776615
+ },
+ {
+  "id": "2078",
+  "name": "Houston Ave @ Spring",
+  "lon": -95.372507,
+  "lat": 29.775341
+ },
+ {
+  "id": "2079",
+  "name": "Houston Ave @ Crockett St",
+  "lon": -95.37253,
+  "lat": 29.773831
+ },
+ {
+  "id": "2080",
+  "name": "Houston Ave @ Bingham St",
+  "lon": -95.372493,
+  "lat": 29.771684
+ },
+ {
+  "id": "2081",
+  "name": "Houston Ave @ Dart St",
+  "lon": -95.372484,
+  "lat": 29.769839
+ },
+ {
+  "id": "2082",
+  "name": "Houston Ave @ Washington Ave",
+  "lon": -95.372474,
+  "lat": 29.767011
+ },
+ {
+  "id": "2083",
+  "name": "Houston Ave @ Lubbock St",
+  "lon": -95.372463,
+  "lat": 29.765628
+ },
+ {
+  "id": "2085",
+  "name": "Sawyer St @ Union",
+  "lon": -95.38263,
+  "lat": 29.767496
+ },
+ {
+  "id": "2086",
+  "name": "Sawyer St @ Decator St",
+  "lon": -95.382294,
+  "lat": 29.766741
+ },
+ {
+  "id": "2087",
+  "name": "Sawyer St @ Lubbock St",
+  "lon": -95.381416,
+  "lat": 29.764623
+ },
+ {
+  "id": "2088",
+  "name": "Houston Ave @ Washington Ave",
+  "lon": -95.372209,
+  "lat": 29.767881
+ },
+ {
+  "id": "2089",
+  "name": "Houston Ave @ Dart St",
+  "lon": -95.372234,
+  "lat": 29.769943
+ },
+ {
+  "id": "2099",
+  "name": "Houston Ave @ Bingham St",
+  "lon": -95.37225,
+  "lat": 29.771423
+ },
+ {
+  "id": "2100",
+  "name": "Houston Ave @ Crockett St",
+  "lon": -95.372279,
+  "lat": 29.773416
+ },
+ {
+  "id": "3020",
+  "name": "Memorial Dr @ Bayou Park Village",
+  "lon": -95.406254,
+  "lat": 29.76186
+ },
+ {
+  "id": "3021",
+  "name": "Memorial Dr @ Shepherd Dr",
+  "lon": -95.408483,
+  "lat": 29.761848
+ },
+ {
+  "id": "3022",
+  "name": "Taylor St @ Katy Freeway",
+  "lon": -95.381456,
+  "lat": 29.776303
+ },
+ {
+  "id": "3023",
+  "name": "Sawyer St @ Shearn St",
+  "lon": -95.381993,
+  "lat": 29.774503
+ },
+ {
+  "id": "3038",
+  "name": "Sawyer St @ Shearn St",
+  "lon": -95.381958,
+  "lat": 29.774304
+ },
+ {
+  "id": "3039",
+  "name": "Taylor St @ Katy Freeway",
+  "lon": -95.381233,
+  "lat": 29.776436
+ },
+ {
+  "id": "3347",
+  "name": "Waugh Dr @ D'Amico St",
+  "lon": -95.398056,
+  "lat": 29.75938
+ },
+ {
+  "id": "3348",
+  "name": "Waugh Dr @ Allen Pkwy",
+  "lon": -95.39806,
+  "lat": 29.760871
+ },
+ {
+  "id": "3349",
+  "name": "S Heights Blvd @ Willia St",
+  "lon": -95.397263,
+  "lat": 29.766455
+ },
+ {
+  "id": "3350",
+  "name": "S Heights Blvd @ Washington Ave",
+  "lon": -95.397002,
+  "lat": 29.768628
+ },
+ {
+  "id": "3351",
+  "name": "Heights Blvd @ Center St",
+  "lon": -95.397107,
+  "lat": 29.77015
+ },
+ {
+  "id": "3352",
+  "name": "Heights Blvd @ Center St",
+  "lon": -95.397121,
+  "lat": 29.771301
+ },
+ {
+  "id": "3353",
+  "name": "Heights Blvd @ Center St",
+  "lon": -95.397161,
+  "lat": 29.772857
+ },
+ {
+  "id": "3354",
+  "name": "Heights Blvd @ 2nd St",
+  "lon": -95.397187,
+  "lat": 29.774083
+ },
+ {
+  "id": "3355",
+  "name": "Heights Blvd @ Katy Freeway",
+  "lon": -95.397203,
+  "lat": 29.776016
+ },
+ {
+  "id": "3356",
+  "name": "Memorial Dr @ Shepherd Dr",
+  "lon": -95.408294,
+  "lat": 29.761468
+ },
+ {
+  "id": "5552",
+  "name": "Kirby Dr @ Shepherd Dr",
+  "lon": -95.409358,
+  "lat": 29.759462
+ },
+ {
+  "id": "5601",
+  "name": "Washington Ave @ Sandman St",
+  "lon": -95.411368,
+  "lat": 29.770518
+ },
+ {
+  "id": "5602",
+  "name": "Washington Ave @ Reinerman St",
+  "lon": -95.41373,
+  "lat": 29.770542
+ },
+ {
+  "id": "5611",
+  "name": "Washington Ave @ Cohn",
+  "lon": -95.422066,
+  "lat": 29.771127
+ },
+ {
+  "id": "5612",
+  "name": "Washington Ave @ Schuler St",
+  "lon": -95.423942,
+  "lat": 29.7723
+ },
+ {
+  "id": "5613",
+  "name": "Washington Ave @ Dell",
+  "lon": -95.426048,
+  "lat": 29.774678
+ },
+ {
+  "id": "5614",
+  "name": "Washington Ave @ Hamman St",
+  "lon": -95.427071,
+  "lat": 29.775848
+ },
+ {
+  "id": "5615",
+  "name": "Westcott St @ Durford",
+  "lon": -95.427319,
+  "lat": 29.775157
+ },
+ {
+  "id": "5616",
+  "name": "Westcott St @ Coppage St",
+  "lon": -95.425621,
+  "lat": 29.773171
+ },
+ {
+  "id": "5617",
+  "name": "Washington Ave @ Cohn",
+  "lon": -95.421967,
+  "lat": 29.770971
+ },
+ {
+  "id": "5619",
+  "name": "Washington Ave @ TC Jester Blvd",
+  "lon": -95.417774,
+  "lat": 29.770586
+ },
+ {
+  "id": "5621",
+  "name": "Washington Ave @ Reinerman St",
+  "lon": -95.413509,
+  "lat": 29.770377
+ },
+ {
+  "id": "6175",
+  "name": "Studewood St @ White Oak Dr",
+  "lon": -95.387585,
+  "lat": 29.781877
+ },
+ {
+  "id": "6177",
+  "name": "Studewood St @ Euclid",
+  "lon": -95.387675,
+  "lat": 29.785056
+ },
+ {
+  "id": "6197",
+  "name": "Studewood St @ E 8th St",
+  "lon": -95.387814,
+  "lat": 29.785475
+ },
+ {
+  "id": "6199",
+  "name": "Studewood St @ White Oak Dr",
+  "lon": -95.387789,
+  "lat": 29.781849
+ },
+ {
+  "id": "6200",
+  "name": "Heights Blvd @ E 4th St",
+  "lon": -95.397251,
+  "lat": 29.777728
+ },
+ {
+  "id": "6201",
+  "name": "Heights Blvd @ E 5th St",
+  "lon": -95.397284,
+  "lat": 29.779577
+ },
+ {
+  "id": "6202",
+  "name": "Heights Blvd @ White Oak Dr",
+  "lon": -95.397315,
+  "lat": 29.78117
+ },
+ {
+  "id": "6203",
+  "name": "Heights Blvd @ E 7th St",
+  "lon": -95.397352,
+  "lat": 29.783256
+ },
+ {
+  "id": "6204",
+  "name": "Heights Blvd @ E 8th St",
+  "lon": -95.397402,
+  "lat": 29.785069
+ },
+ {
+  "id": "6223",
+  "name": "Heights Blvd @ W 8th St",
+  "lon": -95.397791,
+  "lat": 29.785212
+ },
+ {
+  "id": "6224",
+  "name": "Heights Blvd @ W 7th St",
+  "lon": -95.397787,
+  "lat": 29.783502
+ },
+ {
+  "id": "6225",
+  "name": "Heights Blvd @ W 6th St",
+  "lon": -95.397719,
+  "lat": 29.781709
+ },
+ {
+  "id": "6226",
+  "name": "Heights Blvd @ W 5th St",
+  "lon": -95.397674,
+  "lat": 29.779788
+ },
+ {
+  "id": "6227",
+  "name": "Heights Blvd @ Katy Freeway",
+  "lon": -95.39764,
+  "lat": 29.777067
+ },
+ {
+  "id": "6465",
+  "name": "Houston Ave @ Payne St",
+  "lon": -95.372174,
+  "lat": 29.784527
+ },
+ {
+  "id": "6466",
+  "name": "Houston Ave @ Parkview",
+  "lon": -95.37197,
+  "lat": 29.782631
+ },
+ {
+  "id": "6467",
+  "name": "Houston Ave @ White Oak Dr",
+  "lon": -95.372379,
+  "lat": 29.781079
+ },
+ {
+  "id": "6468",
+  "name": "Houston Ave @ Parkview",
+  "lon": -95.372025,
+  "lat": 29.783647
+ },
+ {
+  "id": "6469",
+  "name": "Houston Ave @ North St",
+  "lon": -95.372045,
+  "lat": 29.785035
+ },
+ {
+  "id": "6470",
+  "name": "White Oak Dr @ Michaux St",
+  "lon": -95.38414,
+  "lat": 29.781734
+ },
+ {
+  "id": "6471",
+  "name": "White Oak Dr @ Norhill St",
+  "lon": -95.385835,
+  "lat": 29.781714
+ },
+ {
+  "id": "6472",
+  "name": "White Oak Dr @ Granberry St",
+  "lon": -95.389905,
+  "lat": 29.781658
+ },
+ {
+  "id": "6473",
+  "name": "White Oak Dr @ Oxford St",
+  "lon": -95.39173,
+  "lat": 29.781625
+ },
+ {
+  "id": "6474",
+  "name": "White Oak Dr @ Arlington St",
+  "lon": -95.393885,
+  "lat": 29.781598
+ },
+ {
+  "id": "6475",
+  "name": "White Oak Dr @ Harvard St",
+  "lon": -95.396105,
+  "lat": 29.781577
+ },
+ {
+  "id": "6476",
+  "name": "White Oak Dr @ Harvard St",
+  "lon": -95.396492,
+  "lat": 29.781424
+ },
+ {
+  "id": "6477",
+  "name": "White Oak Dr @ Arlington St",
+  "lon": -95.394144,
+  "lat": 29.781457
+ },
+ {
+  "id": "6478",
+  "name": "White Oak Dr @ Oxford St",
+  "lon": -95.391953,
+  "lat": 29.78149
+ },
+ {
+  "id": "6479",
+  "name": "White Oak Dr @ Granberry St",
+  "lon": -95.390007,
+  "lat": 29.781516
+ },
+ {
+  "id": "6480",
+  "name": "White Oak Dr @ Studewood St",
+  "lon": -95.387347,
+  "lat": 29.781568
+ },
+ {
+  "id": "6481",
+  "name": "White Oak Dr @ Norhill St",
+  "lon": -95.38604,
+  "lat": 29.78159
+ },
+ {
+  "id": "6482",
+  "name": "White Oak Dr @ Michaux St",
+  "lon": -95.384353,
+  "lat": 29.781605
+ },
+ {
+  "id": "6483",
+  "name": "White Oak Dr @ Usener St",
+  "lon": -95.383156,
+  "lat": 29.781083
+ },
+ {
+  "id": "6547",
+  "name": "Washington Ave @ Katy Freeway MB",
+  "lon": -95.430839,
+  "lat": 29.778894
+ },
+ {
+  "id": "6558",
+  "name": "Durham Dr @ Nolda St",
+  "lon": -95.410773,
+  "lat": 29.77641
+ },
+ {
+  "id": "6559",
+  "name": "Durham Dr @ Eigel St",
+  "lon": -95.410746,
+  "lat": 29.775005
+ },
+ {
+  "id": "6560",
+  "name": "Durham Dr @ Allen St",
+  "lon": -95.410711,
+  "lat": 29.773395
+ },
+ {
+  "id": "6561",
+  "name": "Durham Dr @ Schuler St",
+  "lon": -95.410695,
+  "lat": 29.772336
+ },
+ {
+  "id": "6562",
+  "name": "Durham Dr @ Washington Ave",
+  "lon": -95.410652,
+  "lat": 29.77019
+ },
+ {
+  "id": "6564",
+  "name": "Durham Dr @ Blossom St",
+  "lon": -95.410635,
+  "lat": 29.767608
+ },
+ {
+  "id": "6565",
+  "name": "Durham Dr @ Feagan St",
+  "lon": -95.410295,
+  "lat": 29.76625
+ },
+ {
+  "id": "6566",
+  "name": "Shepherd Dr @ Dickson",
+  "lon": -95.409575,
+  "lat": 29.765044
+ },
+ {
+  "id": "6567",
+  "name": "Shepherd Dr @ Memorial Dr",
+  "lon": -95.409329,
+  "lat": 29.76239
+ },
+ {
+  "id": "6568",
+  "name": "Memorial Dr @ Asbury St",
+  "lon": -95.418287,
+  "lat": 29.761535
+ },
+ {
+  "id": "6569",
+  "name": "Memorial Dr @ Birdsall St",
+  "lon": -95.420549,
+  "lat": 29.761513
+ },
+ {
+  "id": "6570",
+  "name": "Memorial Dr @ Terrace Dr",
+  "lon": -95.424415,
+  "lat": 29.762925
+ },
+ {
+  "id": "6571",
+  "name": "Memorial Dr @ Crestwood Dr",
+  "lon": -95.427582,
+  "lat": 29.763621
+ },
+ {
+  "id": "6572",
+  "name": "Memorial Dr @ Crestwood Dr Mb",
+  "lon": -95.429887,
+  "lat": 29.76416
+ },
+ {
+  "id": "6576",
+  "name": "Memorial Dr @ Memorial Loop Dr Mb",
+  "lon": -95.430216,
+  "lat": 29.763964
+ },
+ {
+  "id": "6577",
+  "name": "Memorial Dr @ Crestwood Dr",
+  "lon": -95.427446,
+  "lat": 29.763374
+ },
+ {
+  "id": "6578",
+  "name": "Memorial Dr @ Terrace Dr",
+  "lon": -95.423752,
+  "lat": 29.761917
+ },
+ {
+  "id": "6579",
+  "name": "Memorial Dr @ Knox St",
+  "lon": -95.421036,
+  "lat": 29.76122
+ },
+ {
+  "id": "6580",
+  "name": "Memorial Dr @ Asbury St",
+  "lon": -95.418802,
+  "lat": 29.761234
+ },
+ {
+  "id": "6581",
+  "name": "S Shepherd Dr @ Kirby Dr",
+  "lon": -95.408691,
+  "lat": 29.758884
+ },
+ {
+  "id": "6642",
+  "name": "N Shepherd Dr @ Larkin St",
+  "lon": -95.409559,
+  "lat": 29.779284
+ },
+ {
+  "id": "6643",
+  "name": "N Shepherd Dr @ W 6th St",
+  "lon": -95.409063,
+  "lat": 29.781154
+ },
+ {
+  "id": "6670",
+  "name": "N Durham Dr @ Glen Oaks Rd",
+  "lon": -95.411796,
+  "lat": 29.785642
+ },
+ {
+  "id": "6671",
+  "name": "N Durham Dr @ Cornish St",
+  "lon": -95.410833,
+  "lat": 29.778583
+ },
+ {
+  "id": "10271",
+  "name": "Rusk St @ Bagby St",
+  "lon": -95.369555,
+  "lat": 29.762507
+ },
+ {
+  "id": "10273",
+  "name": "Memorial Dr @ Houston Ave",
+  "lon": -95.37161,
+  "lat": 29.764097
+ },
+ {
+  "id": "10274",
+  "name": "Houston Ave @ Lubbock St",
+  "lon": -95.372137,
+  "lat": 29.765114
+ },
+ {
+  "id": "10426",
+  "name": "Washington Ave @ Durham Dr",
+  "lon": -95.411339,
+  "lat": 29.770348
+ },
+ {
+  "id": "10427",
+  "name": "Washington Ave @ Shepherd Dr",
+  "lon": -95.409646,
+  "lat": 29.770381
+ },
+ {
+  "id": "10471",
+  "name": "McKinney St @ Smith St",
+  "lon": -95.368534,
+  "lat": 29.759043
+ },
+ {
+  "id": "10680",
+  "name": "Washington Ave @ TC Jester Blvd",
+  "lon": -95.417199,
+  "lat": 29.770708
+ },
+ {
+  "id": "10683",
+  "name": "Memorial Dr @ Cowan Dr",
+  "lon": -95.426064,
+  "lat": 29.763609
+ },
+ {
+  "id": "10819",
+  "name": "TC Jester Blvd @ Larkin St",
+  "lon": -95.418257,
+  "lat": 29.779286
+ },
+ {
+  "id": "10821",
+  "name": "TC Jester Blvd @ Larkin St",
+  "lon": -95.417953,
+  "lat": 29.778928
+ },
+ {
+  "id": "10860",
+  "name": "Franklin St @ Mentor",
+  "lon": -95.368178,
+  "lat": 29.765884
+ },
+ {
+  "id": "11248",
+  "name": "Washington Ave @ Houston Ave",
+  "lon": -95.373014,
+  "lat": 29.767274
+ },
+ {
+  "id": "11249",
+  "name": "Memorial Dr @ Sawyer St",
+  "lon": -95.379709,
+  "lat": 29.763542
+ },
+ {
+  "id": "11327",
+  "name": "Sawyer St @ Lubbock St",
+  "lon": -95.381269,
+  "lat": 29.765332
+ },
+ {
+  "id": "11504",
+  "name": "Houston Ave @ Wrightwood",
+  "lon": -95.372152,
+  "lat": 29.781277
+ },
+ {
+  "id": "11881",
+  "name": "Memorial Service  Rd @ Houston Ave",
+  "lon": -95.371424,
+  "lat": 29.763576
+ },
+ {
+  "id": "25051",
+  "name": "Theater District Rusk EB",
+  "lon": -95.367692,
+  "lat": 29.760751
+ },
+ {
+  "id": "12656",
+  "name": "Studemont St @ Washington Ave",
+  "lon": -95.391919,
+  "lat": 29.768436
+ },
+ {
+  "id": "12657",
+  "name": "Studemont St @ Washington Ave",
+  "lon": -95.3921,
+  "lat": 29.768561
+ },
+ {
+  "id": "12658",
+  "name": "Montrose Blvd @ Allen Pkwy",
+  "lon": -95.392305,
+  "lat": 29.76122
+ },
+ {
+  "id": "12659",
+  "name": "Montrose Blvd @ Allen Pkwy",
+  "lon": -95.392551,
+  "lat": 29.761851
+ },
+ {
+  "id": "12376",
+  "name": "Katy Freeway @ TC Jester Blvd",
+  "lon": -95.417375,
+  "lat": 29.776901
+ },
+ {
+  "id": "12377",
+  "name": "Katy Freeway @ TC Jester Blvd",
+  "lon": -95.417801,
+  "lat": 29.777994
+ },
+ {
+  "id": "12378",
+  "name": "Katy Freeway @ Reinerman St",
+  "lon": -95.413741,
+  "lat": 29.776951
+ },
+ {
+  "id": "12379",
+  "name": "Katy Freeway @ Reinerman St",
+  "lon": -95.413895,
+  "lat": 29.778031
+ },
+ {
+  "id": "12380",
+  "name": "Katy Freeway @ Shepherd Dr",
+  "lon": -95.40979,
+  "lat": 29.777007
+ },
+ {
+  "id": "12381",
+  "name": "Katy Freeway @ Shepherd Dr",
+  "lon": -95.408342,
+  "lat": 29.778004
+ },
+ {
+  "id": "12382",
+  "name": "Katy Freeway @ Yale St",
+  "lon": -95.398854,
+  "lat": 29.776049
+ },
+ {
+  "id": "12383",
+  "name": "Katy Freeway @ Yale St",
+  "lon": -95.398537,
+  "lat": 29.776967
+ },
+ {
+  "id": "12384",
+  "name": "White Oak Dr @ Watson St",
+  "lon": -95.380768,
+  "lat": 29.779479
+ },
+ {
+  "id": "12385",
+  "name": "White Oak Dr @ Watson St",
+  "lon": -95.380815,
+  "lat": 29.7796
+ },
+ {
+  "id": "12387",
+  "name": "White Oak Dr @ South St",
+  "lon": -95.367422,
+  "lat": 29.779401
+ },
+ {
+  "id": "12388",
+  "name": "White Oak Dr @ South St",
+  "lon": -95.367112,
+  "lat": 29.779643
+ },
+ {
+  "id": "12392",
+  "name": "White Oak Dr @ Houston Ave",
+  "lon": -95.372229,
+  "lat": 29.780641
+ },
+ {
+  "id": "12395",
+  "name": "Taylor St @ Usener St",
+  "lon": -95.380661,
+  "lat": 29.781083
+ },
+ {
+  "id": "12396",
+  "name": "Watson St @ Usener St",
+  "lon": -95.380898,
+  "lat": 29.780707
+ },
+ {
+  "id": "12399",
+  "name": "Sawyer St @ Washington Ave",
+  "lon": -95.382826,
+  "lat": 29.768497
+ },
+ {
+  "id": "12654",
+  "name": "Studemont St @ Summer St",
+  "lon": -95.390559,
+  "lat": 29.773507
+ },
+ {
+  "id": "12655",
+  "name": "Studemont St @ Katy Fwy Mb",
+  "lon": -95.390794,
+  "lat": 29.773906
+ },
+ {
+  "id": "12899",
+  "name": "Sawyer St @ Washington Ave",
+  "lon": -95.382695,
+  "lat": 29.768723
+ },
+ {
+  "id": "12936",
+  "name": "White Oak Dr @ Studewood St",
+  "lon": -95.387356,
+  "lat": 29.781695
+ },
+ {
+  "id": "12975",
+  "name": "Watson St @ Byrne St",
+  "lon": -95.380685,
+  "lat": 29.78435
+ },
+ {
+  "id": "12976",
+  "name": "Watson St @ Byrne St",
+  "lon": -95.380798,
+  "lat": 29.784575
+ },
+ {
+  "id": "12982",
+  "name": "Washington Ave @ Yale St",
+  "lon": -95.398719,
+  "lat": 29.769645
+ },
+ {
+  "id": "12994",
+  "name": "Washington Ave @ Katy Freeway",
+  "lon": -95.430355,
+  "lat": 29.778203
+ },
+ {
+  "id": "13030",
+  "name": "White Oak Dr @ Houston Ave",
+  "lon": -95.371834,
+  "lat": 29.780305
+ },
+ {
+  "id": "13126",
+  "name": "Studemont St @ Memorial Crest Blvd",
+  "lon": -95.392437,
+  "lat": 29.764888
+ },
+ {
+  "id": "13127",
+  "name": "Studemont St @ Memorial Ct",
+  "lon": -95.392249,
+  "lat": 29.765177
+ },
+ {
+  "id": "13214",
+  "name": "Studewood St @ Voight St",
+  "lon": -95.387005,
+  "lat": 29.779962
+ },
+ {
+  "id": "13215",
+  "name": "Studewood St @ Voight St",
+  "lon": -95.387163,
+  "lat": 29.779821
+ },
+ {
+  "id": "13221",
+  "name": "Memorial Dr @ Sabine St",
+  "lon": -95.375304,
+  "lat": 29.763468
+ }
+]

@@ -1,4 +1,4 @@
-# Curb Fusion — Washington Ave Parking Benefit District
+# CurbFusion — Team Trash Pandas
 
 Overlay Houston public datasets on a common unit, **block face × hour of week**, to surface
 curb-demand patterns no single dataset records. Deliverable: single-file Leaflet map with a
@@ -78,19 +78,46 @@ Deps for scripts: `pip install pyshp shapely pyproj`
 Completeness 30, Track Fit 20, Value 25, Frontier 25. Working map on real city data with one
 clear insight outscores a partial simulator. Submissions due 19:00.
 
-## Framework (added)
+## Repo layout (matches SHARED_BUILD_PLAN.md ownership)
 
-- `docs/CONTRACT.md` — the `corridor.json` schema. Backend and frontend both code against it.
-- `scripts/build_corridor.py` — first pass, produces `data/corridor.json` (317 faces, 0.9 MB) from the
-  pulled GeoJSON: block faces, parcel land-use per face, demand curves, RPP + PBD regulation mask.
-- `src/index.html` — skeleton Leaflet map consuming `corridor.json`: hour-of-week slider, layer toggles,
-  one what-if control, hover readout. Serve with `python -m http.server` from repo root, open
-  `http://localhost:8000/src/`.
+```
+data/core/{faces.geojson,manifest.json,assumptions.json}   B
+data/corridor.json                                        B  (schema 1.0.0 + raccoon fields)
+data/*.geojson, data/*_raw.json, data/*.json              B  raw pulls
+scripts/pull_corridor_data.py, scripts/core/build_core.py B
+docs/MODEL.md, agents/status/core-model.md                B
+src/**, data/context/**, data/joins/**                    A
+```
+Unzip at repo root. Nothing in this zip touches A-owned paths except `src/index.html`, which is B's reference
+viewer for the new schema; A may replace it.
 
-### Split
+## Frontend (B built, A restyles)
 
-**Backend** (owns `scripts/`, `data/`): join 311 to faces, fetch ADT volumes, add bus stops /
-loading / valet to `fixed`, tune curves, keep `corridor.json` in contract.
+- `src/curbfusion.html` — single self-contained file, data inlined, opens by double-click, no server. This is the
+  demo candidate. Rebuild after any data change: `python scripts/core/build_html.py`.
+- `src/curbfusion.template.html` — the editable source; `__DATA__` is replaced at build. Restyle here.
+- `data/corridor_lite.json` — compact UI packet (3.4 MB) written by `build_core.py` → lite step; `corridor.json` stays the contract artifact.
+- `src/app.py` — Streamlit alternative reading the full `corridor.json`.
+- Restyle freely: colors, raccoon art, panel layout, tiles. Keep the scoring functions (they mirror `scripts/core/model.py`).
 
-**Frontend** (owns `src/`): styling, basemap/aerial layer, legend, side panel charts (per-face 168-hour
-sparkline), more what-if controls, demo flow. Never reads anything but `corridor.json`.
+## Product
+
+- Team: **Trash Pandas**. Project: **CurbFusion**.
+- Pitch: a block-face × hour-of-week fusion engine over Houston open data. Curb mode scores curb pressure for
+  planners; Raccoon mode scores the same faces for trash-foraging potential using the same 311 feed. Two modes,
+  one engine, proves the layer is data-agnostic. Serious tool, memorable demo.
+- Track: Houston Open Data.
+
+## Frontend wants (from the human on team B)
+
+- Raccoon iconography: logo, mode toggle, side-panel mascot, optional raccoon markers on top forage faces at night.
+- Zoomed-out default view over the whole rectangle (Heights / Washington / Sixth Ward / near downtown); PBD outline drawn but not the hero.
+- Mode switch Curb ⇄ Raccoon swaps `pressure_index` ⇄ `forage_index`, legend, and presets; same scrubber.
+- If a layer does not read well at the wide zoom (e.g. per-face lines at z13), aggregate or thin it and say so; do not fake density.
+- Hover/click: `display_label`, mode index, components, `confidence`, ADT if present.
+
+## Demo story
+
+1. Raccoon mode, Fri 11 PM: trash-311 hot spots light up in the Heights side streets.
+2. Flip to Curb mode, same hour: pressure moves to Washington Ave commercial faces under the permit scenario.
+3. Same data, same faces, two users. Then the ask: meter transactions and a complete 311 window turn the scenario into a measurement.

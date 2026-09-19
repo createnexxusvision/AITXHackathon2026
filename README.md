@@ -16,13 +16,13 @@ Start with [the shared build plan](docs/SHARED_BUILD_PLAN.md), [the data contrac
 
 ## Project
 
-**Name:** Curb Fusion
+**Name:** CurbFusion — Team Trash Pandas
 
-**One-liner:** Overlays Houston public datasets on a common unit — block face × hour of week — to surface curb-parking demand patterns no single dataset records.
+**One-liner:** Overlays Houston public datasets on a common unit — block face × hour of week — to surface curb-parking demand *and* raccoon-foraging patterns no single dataset records.
 
-**Problem:** Curb-parking conflicts on corridors like Washington Ave (residents vs. commercial visitors vs. permit parking) aren't visible in any single city dataset — you have to cross-reference parcels, permits, road data, and complaints by hand.
+**Problem:** Curb-parking conflicts on corridors like Washington Ave (residents vs. commercial visitors vs. permit parking) aren't visible in any single city dataset — you have to cross-reference parcels, permits, road data, and complaints by hand. Meanwhile the same 311 trash/complaint data that describes curb pressure also describes where a raccoon would have a great night.
 
-**Solution:** Pulls Houston's open parcel, road centerline, residential permit parking, and traffic count data for the Washington Ave Parking Benefit District, builds a per-block-face demand/supply/regulation model across all 168 hours of the week (`data/corridor.json`), and renders it as an interactive Leaflet map (`src/index.html`) with a time-of-week scrubber and what-if controls.
+**Solution:** Pulls Houston's open parcel, road centerline, residential permit parking, traffic count, and solid-waste/311 data for the Washington Ave Parking Benefit District, builds a per-block-face model across all 168 hours of the week (`data/corridor.json`), and renders it as an interactive map (`src/curbfusion.html`) with a time-of-week scrubber, a Curb ⇄ Raccoon mode switch, and a Streets/Satellite basemap toggle that visually shifts from day to evening to night as you scrub through the week.
 
 **Who's the user / customer:** City planners, the Washington Ave PBD, and residents/businesses trying to understand or negotiate curb-parking regulation changes.
 
@@ -41,23 +41,27 @@ pip install pyshp shapely pyproj
 # re-pull source data from Houston open data endpoints (data/*.geojson already committed)
 python scripts/pull_corridor_data.py
 
-# rebuild data/corridor.json from the pulled GeoJSON
-python scripts/build_corridor.py
+# rebuild data/core/*.json + data/corridor.json + data/corridor_lite.json
+python scripts/core/build_core.py
 
-# serve the map
+# inline the data into a single self-contained demo file (no server needed to view it)
+python scripts/core/build_html.py
+# double-click src/curbfusion.html, or:
 python -m http.server
-# open http://localhost:8000/src/
+# open http://localhost:8000/src/curbfusion.html
 ```
+
+`src/app.py` is a Streamlit/pydeck alternative viewer: `pip install streamlit pydeck && streamlit run src/app.py`.
 
 ## Repo Structure
 
 ```
 .
 ├── agents/     # agent status/coordination files (see AGENTS.md)
-├── data/       # Houston open data extracts + built corridor.json model
-├── docs/       # hackathon info, build plan, data contract, handoff notes
-├── scripts/    # data pull + model build scripts
-├── src/        # Leaflet map frontend (index.html)
+├── data/       # Houston open data extracts + built corridor.json / corridor_lite.json model
+├── docs/       # hackathon info, build plan, data contract, model + scoring notes, handoff notes
+├── scripts/    # data pull + model build scripts (scripts/core/ is the current pipeline)
+├── src/        # curbfusion.html (main demo), app.py (Streamlit alt), index.html (older reference)
 ├── tests/      # automated tests
 ├── AGENTS.md   # agent/collaborator ownership rules
 └── README.md

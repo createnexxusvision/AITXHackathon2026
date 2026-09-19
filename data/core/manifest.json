@@ -1,0 +1,24 @@
+{
+ "faces_version": "51709a97bd",
+ "schema_version": "1.0.0",
+ "generated_at": "2026-09-19T20:15:12+00:00",
+ "producer_commit": null,
+ "crs_measure": "EPSG:2278 (US survey ft)",
+ "face_count": 2974,
+ "in_analysis_area": 364,
+ "bbox": [
+  -95.42420794659994,
+  29.766698119853018,
+  -95.37230198920996,
+  29.77204335691411
+ ],
+ "sources": {
+  "centerline": "https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/COH_RoadCenterline/FeatureServer/0",
+  "parcels": "https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/HCAD_Parcels/FeatureServer/0",
+  "rpp": "https://services.arcgis.com/NummVBqZSIJKUeVR/arcgis/rest/services/Residential_Parking_Permit_3/FeatureServer/6",
+  "pbd": "https://data.houstontx.gov/dataset/washington-avenue-parking-benefit-district (2013)",
+  "adt": "https://geogimstest.houstontx.gov/arcgis/rest/services/TDO/Traffic_gx/MapServer/4 + table 22",
+  "metro": "METRO GTFS static stops.txt (metro.resourcespace.com ref 4835)",
+  "sr311": "https://mycity2.houstontx.gov/pubgis01/rest/services/311 (OPEN + recent layers)"
+ }
+}

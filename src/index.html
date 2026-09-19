@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Curb Fusion — Washington Ave PBD</title>
+<title>CurbFusion — Trash Pandas</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
   html,body{margin:0;height:100%;font:14px system-ui,sans-serif;background:#111;color:#eee}
@@ -20,18 +20,19 @@
 <body>
 <div id="map"></div>
 <div id="panel">
-  <h1>Curb Fusion — Washington Ave PBD</h1>
+  <h1>CurbFusion <span id="modeName"></span></h1>
+  <label><input type="radio" name="mode" value="curb" checked> Curb mode</label>
+  <label><input type="radio" name="mode" value="raccoon"> 🦝 Raccoon mode</label>
   <input id="hour" type="range" min="0" max="167" value="93">
   <div id="hourlabel"></div>
-  <label><input type="checkbox" id="l_demand" checked> demand (land use)</label>
-  <label><input type="checkbox" id="l_reg" checked> regulation</label>
-  <label><input type="checkbox" id="l_compl" checked> 311 complaints</label>
-  <label><input type="checkbox" id="w_permit"> what-if: PBD permit hours 24/7</label>
+  <label><input type="checkbox" id="l_pbd" checked> PBD outline</label>
+  <label><input type="checkbox" id="l_311"> 311 points (mode-filtered)</label>
+  <div id="presets"></div>
   <div class="legend" style="margin-top:8px">
     <span style="background:#2b83ba"></span>low
     <span style="background:#ffffbf"></span>mid
     <span style="background:#d7191c"></span>high
-    <span style="background:#555"></span>no parking
+    <span style="background:#555"></span>no data
   </div>
   <div id="info">hover a block face</div>
 </div>
@@ -40,48 +41,43 @@
 const DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 const map=L.map("map",{zoomControl:false});
 L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{attribution:"&copy; OSM &copy; CARTO",maxZoom:19}).addTo(map);
-let data,layer,maxStress=1;
+let data,layer,ptLayer,pbdLayer,mode="curb";
 const $=id=>document.getElementById(id);
-
-function ramp(t){ // 0..1 -> blue..yellow..red
-  t=Math.max(0,Math.min(1,t));
+function ramp(t){t=Math.max(0,Math.min(1,t));
   const c=t<.5?[43+(255-43)*t*2,131+(255-131)*t*2,186+(191-186)*t*2]:[255-(255-215)*(t-.5)*2,255-(255-25)*(t-.5)*2,191-(191-28)*(t-.5)*2];
-  return `rgb(${c.map(Math.round)})`;
-}
-function stress(f,h){
-  const useD=$("l_demand").checked,useC=$("l_compl").checked,useR=$("l_reg").checked;
-  let reg=f.reg[h];
-  if($("w_permit").checked && f.reg_source.startsWith("PBD")) reg=1;
-  if(useR && reg===3) return null;
-  let s=0;
-  if(useD) s+=f.demand[h]/Math.max(f.supply,1);
-  if(useC) s+=data.meta.w_c*(f.complaints?f.complaints[h]:0);
-  if(useR && reg===2) s*=1.5;            // permit-only: overflow pressure
-  return s;
-}
+  return `rgb(${c.map(Math.round)})`;}
+const idx=f=>mode==="curb"?f.pressure_index:f.forage_index;
 function render(){
   const h=+$("hour").value;
   $("hourlabel").textContent=`${DAYS[Math.floor(h/24)]} ${String(h%24).padStart(2,"0")}:00`;
-  layer.eachLayer(l=>{
-    const s=stress(l.feature,h);
-    l.setStyle({color:s===null?"#555":ramp(s/maxStress),weight:5,opacity:.9});
-  });
+  $("modeName").textContent=mode==="curb"?"· curb pressure":"· raccoon forage";
+  layer.eachLayer(l=>{const v=idx(l.feature);
+    l.setStyle({color:v?ramp(v[h]/100):"#555",weight:v?4:1.5,opacity:v?.9:.4});});
+  drawPoints();
+}
+function drawPoints(){
+  ptLayer.clearLayers(); if(!$("l_311").checked) return;
+  const kind=mode==="curb"?"parking":"trash";
+  data.points.sr311.filter(p=>p.kind===kind).forEach(p=>L.circleMarker([p.lat,p.lon],{radius:3,color:"#fff",weight:1,fillOpacity:.8})
+    .bindTooltip(`${p.type} · ${DAYS[Math.floor(p.h/24)]} ${p.h%24}:00 · ${p.date}`).addTo(ptLayer));
 }
 fetch("../data/corridor.json").then(r=>r.json()).then(d=>{
-  data=d;
-  maxStress=Math.max(...d.faces.map(f=>Math.max(...f.stress)))||1;
-  layer=L.layerGroup().addTo(map);
+  data=d; layer=L.layerGroup().addTo(map); ptLayer=L.layerGroup().addTo(map);
   d.faces.forEach(f=>{
-    const pl=L.polyline(f.geom.map(([x,y])=>[y,x]),{weight:5});
-    pl.feature=f;
-    pl.on("mouseover",()=>{
-      const h=+$("hour").value;
-      $("info").textContent=`${f.id}\nsupply ${f.supply} spaces · ${f.length_ft} ft\nland use ${JSON.stringify(f.landuse)}\nreg ${["open","metered","permit","none"][f.reg[h]]} (${f.reg_source})\nstress ${(stress(f,h)??0).toFixed(2)}`;
-    });
-    layer.addLayer(pl);
-  });
-  const b=d.meta.bbox; map.fitBounds([[b[1],b[0]],[b[3],b[2]]]);
-  ["hour","l_demand","l_reg","l_compl","w_permit"].forEach(id=>$(id).addEventListener("input",render));
+    const pl=L.polyline(f.geometry.coordinates.map(([x,y])=>[y,x]),{weight:4}); pl.feature=f;
+    pl.on("mouseover",()=>{const h=+$("hour").value,v=idx(f);
+      $("info").textContent=`${f.display_label}\n${mode==="curb"?"pressure":"forage"} ${v?v[h]:"—"} · confidence ${f.confidence}\n`+
+        (mode==="curb"?`capacity ${f.gross_capacity_spaces} · demand ${f.demand_proxy?f.demand_proxy[h]:"—"} · ${f.regulation_mask&&f.regulation_mask[h]?"restricted":"open"}\nrules: ${f.regulation_rules.text.join("; ")||"none"}\nADT ${f.adt?f.adt.volume+" ("+f.adt.measured+")":"—"}`
+                       :`trash 311: ${f.forage_components.trash_311_total} · T ${f.forage_components.T} R ${f.forage_components.R} F ${f.forage_components.F}`);});
+    layer.addLayer(pl);});
+  fetch("../data/pbd_boundary.geojson").then(r=>r.json()).then(g=>{pbdLayer=L.geoJSON(g,{style:{color:"#fff",weight:1.5,fill:false,dashArray:"4 4"}}).addTo(map);
+    $("l_pbd").addEventListener("change",e=>e.target.checked?pbdLayer.addTo(map):map.removeLayer(pbdLayer));});
+  const b=d.faces.reduce((a,f)=>{f.geometry.coordinates.forEach(([x,y])=>{a[0]=Math.min(a[0],y);a[1]=Math.min(a[1],x);a[2]=Math.max(a[2],y);a[3]=Math.max(a[3],x)});return a},[90,180,-90,-180]);
+  map.fitBounds([[b[0],b[1]],[b[2],b[3]]]);
+  d.presets.forEach(p=>{const bt=document.createElement("button");bt.textContent=p.label;bt.style.cssText="margin:2px 2px 0 0;font-size:11px";
+    bt.onclick=()=>{mode=p.mode;document.querySelector(`input[name=mode][value=${p.mode}]`).checked=true;$("hour").value=p.h;render();};$("presets").appendChild(bt);});
+  document.querySelectorAll("input[name=mode]").forEach(r=>r.addEventListener("change",e=>{mode=e.target.value;render();}));
+  ["hour","l_311"].forEach(id=>$(id).addEventListener("input",render));
   render();
 });
 </script>

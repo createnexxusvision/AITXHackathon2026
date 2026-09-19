@@ -1,0 +1,102 @@
+{
+  "raccoon_bachelor": {
+    "label": "🦝 Bachelor raccoon — quick dinner",
+    "audience": "raccoon",
+    "blurb": "Bins on the curb the night before garbage day, plus restaurant dumpsters. Eat and leave.",
+    "weights": {
+      "trash311": 0.35,
+      "com": 0.3,
+      "res": 0.2,
+      "missed": 0.15
+    },
+    "curves": [
+      "garbage_night",
+      "commercial"
+    ]
+  },
+  "raccoon_family": {
+    "label": "🦝🦝🦝 Raccoon family — settle down",
+    "audience": "raccoon",
+    "blurb": "Dependable weekly supply (garbage AND recycling nights), quiet streets, big trees to den in, low roadkill risk.",
+    "weights": {
+      "res": 0.3,
+      "trees": 0.2,
+      "adt_low": 0.25,
+      "trash311": 0.15,
+      "missed": 0.1
+    },
+    "curves": [
+      "garbage_night",
+      "recycling_night"
+    ]
+  },
+  "raccoon_date_night": {
+    "label": "🦝💘 Raccoon looking for a mate",
+    "audience": "raccoon",
+    "blurb": "Go where the other raccoons are: highest trash density, late, near the bars. Bring a snack.",
+    "weights": {
+      "trash311": 0.4,
+      "com": 0.4,
+      "missed": 0.2
+    },
+    "curves": [
+      "late",
+      "nocturnal"
+    ]
+  },
+  "raccoon_buffet": {
+    "label": "🦝🛋️ Heavy-trash buffet",
+    "audience": "raccoon",
+    "blurb": "Monthly heavy-trash service: couches, fridges, mystery bags. Yard waste night as a chaser.",
+    "weights": {
+      "res": 0.5,
+      "missed": 0.3,
+      "trash311": 0.2
+    },
+    "curves": [
+      "yard_night",
+      "garbage_night"
+    ]
+  },
+  "human_resident_11pm": {
+    "label": "🚗 Resident, home at 11 PM",
+    "audience": "human",
+    "blurb": "Residential frontage with room, quiet street, away from commercial spillover, late evening.",
+    "weights": {
+      "res": 0.35,
+      "capacity": 0.3,
+      "adt_low": 0.25,
+      "com": -0.4
+    },
+    "curves": [
+      "late"
+    ]
+  },
+  "human_delivery_driver": {
+    "label": "📦 Delivery driver, needs a curb",
+    "audience": "human",
+    "blurb": "Commercial frontage, capacity, no bus stop in the way, off-peak hours.",
+    "weights": {
+      "com": 0.45,
+      "capacity": 0.35,
+      "adt_high": 0.2,
+      "stops": -0.3
+    },
+    "curves": [
+      "commercial"
+    ]
+  },
+  "human_311_hotspot": {
+    "label": "🏛️ City ops — where do complaints stack?",
+    "audience": "human",
+    "blurb": "Parking complaints + missed collections + illegal dumping on the same face. One crew, one trip.",
+    "weights": {
+      "parking311": 0.4,
+      "missed": 0.3,
+      "trash311": 0.3
+    },
+    "curves": [
+      "flat"
+    ]
+  }
+}

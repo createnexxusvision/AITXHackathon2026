@@ -1,11 +1,14 @@
 # Frontend kickoff
 
-Input: `data/corridor.json` only (spec: `docs/CONTRACT.md`). Serve the repo root with
+**Chosen: Python.** Reference: `src/app.py` (Streamlit + pydeck). `pip install streamlit pydeck && streamlit run src/app.py`.
+`src/index.html` is the older Leaflet reference; either may be replaced by A.
+
+Input: `data/corridor.json` only (spec: `docs/DATA_CONTRACT.md` 1.0.0 + `docs/MODEL.md`). Serve the repo root with
 `python -m http.server` and open `/src/`. A working skeleton exists at `src/index.html`.
 
 ## What to build
 
-1. Map with block faces as thick lines, colored by `stress[h]`; `reg[h]==3` grey.
+1. Map with block faces as thick lines, colored by `pressure_index[h]` / `forage_index[h]` per `modes`; null index → grey.
 2. Hour-of-week scrubber (0..167) with play/pause; label from `meta.hour0`.
 3. Preset buttons from `presets[]`.
 4. Layer toggles: demand, regulation, complaints, supply; markers from `points.metro_stops`, `points.adt_stations`.

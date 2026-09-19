@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CurbFusion — Trash Pandas</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+  :root{--bg:#0f1115;--panel:rgba(18,20,26,.94);--fg:#e8e8ea;--mut:#9aa0ab;--acc:#f5b942;--line:#262a33;
+        box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+  html{scroll-padding-top:env(safe-area-inset-top,0px)}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  #map{position:absolute;inset:0;background:var(--bg);isolation:isolate}
+  .leaflet-container{background:var(--bg)}
+  #left{position:absolute;top:12px;left:12px;z-index:1000;width:330px;max-height:calc(100% - 24px);overflow:auto;
+        background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;backdrop-filter:blur(6px)}
+  #right{position:absolute;top:12px;right:12px;z-index:1000;width:300px;max-width:calc(100% - 24px);background:var(--panel);border:1px solid var(--line);
+         border-radius:12px;padding:14px 16px;display:none}
+  @media (max-width:900px){
+    #left{width:min(330px,calc(100% - 24px));max-height:55%}
+    #right{top:auto;bottom:12px;left:12px;right:12px;width:auto;max-height:40%;overflow:auto}
+  }
+  h1{font-size:20px;margin:0;letter-spacing:.2px}
+  h1 small{display:block;font-size:12px;color:var(--mut);font-weight:400;margin-top:2px}
+  .raccoon{font-size:34px;line-height:1;margin-right:8px;vertical-align:middle}
+  select,button{background:#1b1f27;color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font:inherit}
+  select{width:100%;margin:10px 0 6px}
+  .blurb{color:var(--mut);font-size:12.5px;min-height:34px}
+  #hour{width:100%;margin:8px 0 2px;accent-color:var(--acc)}
+  .row{display:flex;gap:6px;align-items:center;justify-content:space-between}
+  #hourlabel{font-variant-numeric:tabular-nums;font-weight:600}
+  button.play{padding:4px 10px}
+  .presets button{font-size:11.5px;margin:4px 4px 0 0;padding:4px 8px;border-radius:14px}
+  .legend{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--mut);margin-top:10px}
+  .legend .bar{flex:1;height:8px;border-radius:4px;background:linear-gradient(90deg,#2b83ba,#ffffbf,#d7191c)}
+  label.chk{display:block;font-size:12.5px;color:var(--mut);margin-top:4px}
+  #top{margin-top:10px;font-size:12.5px}
+  #top div{display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px dashed var(--line);cursor:pointer}
+  #top div:hover{color:var(--acc)}
+  #top b{font-variant-numeric:tabular-nums}
+  #right h2{font-size:14px;margin:0 0 6px}
+  #right .k{color:var(--mut)}
+  #spark{width:100%;height:60px;display:block;margin:6px 0}
+  #right .facts{font-size:12px;line-height:1.5}
+  .foot{font-size:10.5px;color:var(--mut);margin-top:10px;border-top:1px solid var(--line);padding-top:8px}
+  #skytint{position:absolute;inset:0;z-index:2;pointer-events:none;background:rgba(0,0,0,0);transition:background .8s ease}
+  .hint{color:var(--mut);font-size:12px;background:#1b1f27;border:1px solid var(--line);border-radius:8px;padding:7px 9px;margin:0 0 10px}
+  .basemaps{display:flex;gap:4px;margin:0 0 8px}
+  .basemaps button{flex:1;font-size:11.5px;padding:6px 4px;border-radius:8px;white-space:nowrap}
+  .basemaps button.active{background:var(--acc);color:#1a1300;border-color:var(--acc);font-weight:600}
+  #timeicon{font-size:16px;margin-right:2px;vertical-align:-2px}
+  #timeband{color:var(--mut);font-size:11.5px}
+  .tiles-dark{filter:invert(1) hue-rotate(180deg) brightness(.92) contrast(.9) saturate(.7)}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="skytint"></div>
+<div id="left">
+  <h1><span class="raccoon">🦝</span>CurbFusion<small>Team Trash Pandas · Houston open data, block face × hour of week</small></h1>
+  <p class="hint">Drag the slider to fast-forward through the week. Switch the map below between streets and satellite, and watch it shift from day to evening to night as time passes.</p>
+  <div class="basemaps">
+    <button data-map="streets">🗺️ Streets</button>
+    <button data-map="satellite">🛰️ Satellite</button>
+    <button data-map="dark" class="active">🌓 Dark</button>
+  </div>
+  <select id="mode"></select>
+  <div class="blurb" id="blurb"></div>
+  <input id="hour" type="range" min="0" max="167" value="118">
+  <div class="row"><span><span id="timeicon">☀️</span><span id="hourlabel"></span> <span id="timeband"></span></span><button class="play" id="play">▶ play week</button></div>
+  <div class="presets" id="presets"></div>
+  <div class="legend"><span>low</span><div class="bar"></div><span>high</span></div>
+  <label class="chk"><input type="checkbox" id="pts"> show 311 points for this mode</label>
+  <label class="chk"><input type="checkbox" id="pbdOnly"> Washington Ave PBD only</label>
+  <div id="top"></div>
+  <div class="foot">Scores are proxies × assumptions, not measurements. Sources: HCAD, COH centerlines, RPP, Public Works ADT, METRO GTFS, 311, Solid Waste pickup areas. See docs/MODEL.md &amp; docs/SCORING.md.</div>
+</div>
+<div id="right">
+  <h2 id="rTitle"></h2>
+  <canvas id="spark" width="268" height="60"></canvas>
+  <div class="facts" id="rFacts"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script id="data" type="application/json">__DATA__</script>
+<script>
+const D=JSON.parse(document.getElementById("data").textContent);
+const DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const $=id=>document.getElementById(id);
+const $$=sel=>document.querySelectorAll(sel);
+const map=L.map("map",{zoomControl:false,preferCanvas:true});
+L.control.zoom({position:"bottomright"}).addTo(map);
+const ERR="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+const basemaps={
+  dark:L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap contributors",maxZoom:19,errorTileUrl:ERR,className:"tiles-dark"}),
+  streets:L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap contributors",maxZoom:19,errorTileUrl:ERR}),
+  satellite:L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{attribution:"Esri, Maxar, Earthstar Geographics",maxZoom:19,errorTileUrl:ERR}),
+};
+const satLabels=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,errorTileUrl:ERR,opacity:.9});
+let activeBase="dark"; basemaps.dark.addTo(map);
+Object.values(basemaps).forEach(t=>{let fail=0; t.on("tileerror",()=>{ if(++fail>4 && map.hasLayer(t)) map.removeLayer(t); });});
+function setBasemap(name){ if(name===activeBase)return;
+  map.removeLayer(basemaps[activeBase]); if(map.hasLayer(satLabels)) map.removeLayer(satLabels);
+  activeBase=name; basemaps[name].addTo(map); if(name==="satellite") satLabels.addTo(map);
+  $$(".basemaps button").forEach(b=>b.classList.toggle("active",b.dataset.map===name));}
+$$(".basemaps button").forEach(b=>b.onclick=()=>setBasemap(b.dataset.map));
+let mode="curb",h=+$("hour").value,playing=null,sel=null;
+
+// ---------- scoring (mirrors scripts/core/model.py) ----------
+const N=D.normalization;
+function demand(f,hh){let s=0;for(const c in f.lu){const cv=D.classes[c];if(cv)s+=f.lu[c]*cv.curve[hh];}return s;}
+function pressure(f,hh){ if(!Object.keys(f.lu).length) return null;
+  const Dv=Math.min(1,demand(f,hh)/(N.demand_p95||1)); const S=(f.mask&&f.mask[hh]==="1")?0:1;
+  return Math.round(100*(0.6*Dv+0.25*(1-S))/0.85);}
+function forage(f,hh){ return f.fb==null?null:Math.round(100*f.fb*D.raccoon_curve[hh]); }
+function recipe(f,rid,hh){const sc=f.sc[rid];if(!sc)return null;let c=0;for(const k of sc.curves)c=Math.max(c,D.curve_table[k][hh]);return Math.round(100*sc.base*c);}
+function value(f,hh){const key=D.modes[mode].index; if(key==="pressure_index")return pressure(f,hh); if(key==="forage_index")return forage(f,hh); return recipe(f,key.slice(7),hh);}
+function series(f){const out=[];for(let i=0;i<168;i++)out.push(value(f,i));return out;}
+function ramp(t){t=Math.max(0,Math.min(1,t));
+  const c=t<.5?[43+212*t*2,131+124*t*2,186+5*t*2]:[255-40*(t-.5)*2,255-230*(t-.5)*2,191-163*(t-.5)*2];
+  return `rgb(${c.map(Math.round)})`;}
+
+// ---------- layers ----------
+const faceLayer=L.layerGroup().addTo(map), ptLayer=L.layerGroup().addTo(map);
+const polys=D.faces.map(f=>{const pl=L.polyline(f.g.map(([x,y])=>[y,x]),{weight:3,opacity:.9});pl.f=f;
+  pl.on("click",()=>{sel=f;showFace();}); pl.on("mouseover",()=>{if(!sel)showFace(f);}); faceLayer.addLayer(pl); return pl;});
+// faint road context from the faces themselves (works with no tiles)
+const ctx=L.layerGroup().addTo(map); D.faces.forEach(f=>ctx.addLayer(L.polyline(f.g.map(([x,y])=>[y,x]),{color:"#3a3f4a",weight:7,opacity:.35,interactive:false})));
+const home=()=>{map.invalidateSize();map.fitBounds([[29.758,-95.433],[29.786,-95.367]],{padding:[10,10]});};
+home(); setTimeout(home,300); window.addEventListener("resize",()=>setTimeout(home,100));
+
+function sky(hod){ // day / evening / night, by hour of day 0..23
+  if(hod>=6&&hod<18) return {icon:"☀️",label:"Day",tint:"rgba(0,0,0,0)"};
+  if(hod>=18&&hod<21) return {icon:"🌇",label:"Evening",tint:"rgba(255,140,66,.20)"};
+  return {icon:"🌙",label:"Night",tint:"rgba(8,12,32,.55)"};}
+function render(){
+  const hod=h%24, s=sky(hod);
+  $("hourlabel").textContent=`${DAYS[Math.floor(h/24)]} ${String(hod).padStart(2,"0")}:00`;
+  $("timeicon").textContent=s.icon; $("timeband").textContent=s.label; $("skytint").style.background=s.tint;
+  const pbdOnly=$("pbdOnly").checked, ranked=[];
+  for(const pl of polys){const f=pl.f;
+    if(pbdOnly&&!f.pbd){pl.setStyle({opacity:0});continue;}
+    const v=value(f,h);
+    pl.setStyle({color:v==null?"#2c313b":ramp(v/100),weight:v==null?1:3,opacity:v==null?.5:.95});
+    if(v!=null)ranked.push([v,f]);}
+  ranked.sort((a,b)=>b[0]-a[0]);
+  $("top").innerHTML=ranked.slice(0,6).map(([v,f])=>`<div data-id="${f.id}"><span>${f.label}</span><b>${v}</b></div>`).join("");
+  $("top").querySelectorAll("div").forEach(el=>el.onclick=()=>{const f=D.faces.find(x=>x.id===el.dataset.id);sel=f;showFace();map.fitBounds(L.polyline(f.g.map(([x,y])=>[y,x])).getBounds().pad(2));});
+  drawPoints(); if(sel)showFace();
+}
+function drawPoints(){ptLayer.clearLayers(); if(!$("pts").checked)return;
+  const aud=D.modes[mode].audience||(mode==="curb"?"human":"raccoon"); const kind=aud==="human"?"parking":"trash";
+  D.points.sr311.filter(p=>p.kind===kind).forEach(p=>L.circleMarker([p.lat,p.lon],{radius:2.5,color:"#fff",weight:1,fillOpacity:.7})
+    .bindTooltip(`${p.type} · ${DAYS[Math.floor(p.h/24)]} ${p.h%24}:00`).addTo(ptLayer));}
+function showFace(f){f=f||sel; if(!f)return; $("right").style.display="block";
+  const s=series(f), v=s[h];
+  $("rTitle").textContent=f.label+(f.pbd?" · PBD":"");
+  const c=$("spark").getContext("2d"),W=268,H=60; c.clearRect(0,0,W,H);
+  for(let i=0;i<168;i++){const x=i*W/168,y=s[i]==null?H:H-(s[i]/100)*H; c.fillStyle=i===h?"#f5b942":(s[i]==null?"#333":ramp(s[i]/100)); c.fillRect(x,y,W/168-.3,H-y);}
+  const lu=Object.entries(f.lu).map(([k,a])=>`${k} ${a.toFixed(2)} ac`).join(", ")||"no parcels";
+  $("rFacts").innerHTML=`<b>${D.modes[mode].label}</b>: <b>${v==null?"—":v}</b> · confidence ${f.conf}<br>
+    <span class="k">capacity</span> ${f.cap} spaces · <span class="k">ADT</span> ${f.adt??"—"}<br>
+    <span class="k">land use</span> ${lu}<br>
+    <span class="k">pickup</span> garbage ${f.sched.garbage||"—"} · recycling ${f.sched.recycling||"—"} · heavy ${f.sched.heavy||"—"}<br>
+    <span class="k">311</span> trash ${Math.round(f.comp.trash311*100)}% · parking ${Math.round(f.comp.parking311*100)}% · missed ${f.x.missed_collections} · trees ${f.x.tree_311} · roadkill ${f.x.dead_animals}<br>
+    <span class="k">rules</span> ${f.rules.join("; ")||"none"}`;}
+
+// ---------- controls ----------
+const groups={raccoon:"🦝 Raccoons",human:"🧑 Humans",contract:"📐 Contract indices"};
+const opts={raccoon:[],human:[],contract:[]};
+for(const [id,m] of Object.entries(D.modes)){const g=id==="curb"||id==="raccoon"?"contract":(m.audience||"human");opts[g].push(`<option value="${id}">${m.label}</option>`);}
+$("mode").innerHTML=Object.keys(groups).map(g=>`<optgroup label="${groups[g]}">${opts[g].join("")}</optgroup>`).join("");
+$("mode").value=mode;
+const setMode=m=>{mode=m;$("mode").value=m;$("blurb").textContent=D.modes[m].blurb||D.modes[m].label;render();};
+$("mode").onchange=e=>setMode(e.target.value);
+$("hour").oninput=e=>{h=+e.target.value;render();};
+$("pts").onchange=render; $("pbdOnly").onchange=render;
+$("presets").innerHTML=D.presets.map((p,i)=>`<button data-i="${i}">${p.label}</button>`).join("")+
+  `<button data-i="g">🗑️ Wed 10 PM — garbage night (Heights)</button>`;
+$("presets").querySelectorAll("button").forEach(b=>b.onclick=()=>{ if(b.dataset.i==="g"){setMode("raccoon_family");h=2*24+22;} else {const p=D.presets[+b.dataset.i];setMode(p.mode);h=p.h;} $("hour").value=h;render();});
+$("play").onclick=()=>{ if(playing){clearInterval(playing);playing=null;$("play").textContent="▶ play week";return;}
+  $("play").textContent="⏸ pause"; playing=setInterval(()=>{h=(h+1)%168;$("hour").value=h;render();},180);};
+map.on("click",()=>{sel=null;});
+setMode(mode);
+</script>
+</body>
+</html>
