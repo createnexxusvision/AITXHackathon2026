@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CurbFusion Recipe Agent</title>
+<style>
+  :root{--bg:#0f1115;--panel:#151821;--fg:#e8e8ea;--mut:#9aa0ab;--acc:#8a93a6;--line:#262a33;--pos:#5ec26a;--neg:#e0574f;--dim:#5c6270}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font:13.5px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  .wrap{max-width:1100px;margin:0 auto;padding:18px 16px 40px}
+  h1{font-size:20px;margin:0} h1 small{display:block;font-size:12px;color:var(--mut);font-weight:400}
+  .ask{display:flex;gap:8px;margin:14px 0}
+  .ask input{flex:1;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit}
+  button{background:#1b1f27;color:var(--fg);border:1px solid var(--line);border-radius:9px;padding:8px 12px;font:inherit;cursor:pointer}
+  button.primary{background:var(--acc);color:#eee;border-color:#3a4150;background:#2a3040;font-weight:600}
+  .examples button{font-size:12px;margin:0 6px 6px 0;padding:4px 9px;border-radius:14px}
+  .status{color:var(--mut);font-size:12.5px;min-height:18px;margin:4px 0 10px}
+  .grid{display:grid;grid-template-columns:1fr 340px;gap:16px}
+  @media (max-width:820px){.grid{grid-template-columns:1fr}}
+  .src{margin:14px 0 4px;font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--line);padding-bottom:4px}
+  .row{display:grid;grid-template-columns:230px 1fr 120px 48px;gap:10px;align-items:center;padding:7px 0;border-bottom:1px dashed var(--line)}
+  .row .n{font-weight:600} .row .d{font-size:11.5px;color:var(--mut)} .row .r{font-size:12.5px;color:var(--fg)}
+  .row .r:empty::before{content:"—";color:var(--dim)}
+  .row input[type=range]{width:120px;accent-color:var(--acc)}
+  .row b{font-variant-numeric:tabular-nums;text-align:right;font-size:12px} b.p{color:var(--pos)} b.m{color:var(--neg)}
+  .row.licensed .n::after{content:" licensed";font-size:10px;color:#7cc4ff;border:1px solid #7cc4ff;border-radius:8px;padding:0 5px;margin-left:6px;font-weight:400}
+  .row.excluded{opacity:.4} .row.excluded input{display:none}
+  .req{font-size:11px;color:#7cc4ff;border:1px solid #7cc4ff;border-radius:8px;padding:2px 7px;background:none;cursor:pointer;margin-top:4px}
+  .row.planned .n::after{content:" planned";font-size:10px;color:var(--acc);border:1px solid var(--acc);border-radius:8px;padding:0 5px;margin-left:6px;font-weight:400}
+  .row.planned input{opacity:.5}
+  .row.zero{opacity:.55}
+  .side{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;position:sticky;top:12px;align-self:start}
+  .side h2{font-size:13px;margin:0 0 6px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px}
+  .side input[type=text]{width:100%;background:#1b1f27;color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font:inherit;margin-bottom:6px}
+  .curves label{display:block;font-size:12.5px;margin:3px 0} .curves .why{color:var(--mut);font-size:11.5px;margin-left:20px}
+  ul.missing{margin:4px 0 10px 18px;padding:0;font-size:12.5px} ul.missing li{margin:2px 0}
+  textarea{width:100%;height:150px;background:#0c0e13;color:#cfd3da;border:1px solid var(--line);border-radius:8px;font:11px ui-monospace,Menlo,Consolas,monospace;padding:8px}
+  .toggle{font-size:12px;color:var(--mut);cursor:pointer;margin:10px 0}
+  .summary{font-size:12.5px;color:var(--mut);margin:6px 0 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🦝 CurbFusion Recipe Agent<small>Describe a need. The agent picks datasets, signs and weights them, and sets when it applies. Tick, drag, name it, ship it.</small></h1>
+  <div class="examples" id="premade" style="margin:10px 0 2px"></div>
+  <div class="ask">
+    <input id="need" placeholder="e.g. delivery driver with a box truck, mornings, hates tickets">
+    <button class="primary" id="go">Propose recipe</button>
+  </div>
+  <div class="examples" id="examples"></div>
+  <div class="status" id="status"></div>
+  <div class="grid">
+    <div>
+      <div class="toggle" id="toggle">▾ hide unticked datasets</div>
+      <div id="list"></div>
+    </div>
+    <div class="side">
+      <h2>Recipe</h2>
+      <input type="text" id="name" placeholder="name">
+      <input type="text" id="blurb" placeholder="one-line blurb">
+      <div class="summary" id="summary"></div>
+      <h2 style="margin-top:12px">When does this apply?</h2>
+      <div class="curves" id="days"></div>
+      <div style="display:flex;gap:6px;align-items:center;margin-top:6px;font-size:12.5px">from <select id="wstart"></select> to <select id="wend"></select></div>
+      <div class="why" id="wreason" style="color:var(--mut);font-size:11.5px;margin-top:4px"></div>
+      <label style="display:block;font-size:12.5px;margin-top:8px"><input type="checkbox" id="pickup"> also boost the evening before garbage pickup <span style="color:var(--mut)">(per block, from Solid Waste schedules)</span></label>
+      <h2 style="margin-top:12px">Locked data the agent would use</h2>
+      <ul class="missing" id="missing"></ul>
+      <h2>JSON for recipes.json</h2>
+      <textarea id="json" readonly></textarea>
+      <div style="margin-top:6px"><button id="copy">copy</button> <button id="dl">download</button></div>
+    </div>
+  </div>
+</div>
+<script id="cat" type="application/json">__CATALOG__</script>
+<script>
+// ---------------------------------------------------------------- catalog
+// live = in corridor_lite.json today; planned = identified public source, not yet joined
+// Endpoint. In the claude.ai chat preview the direct API works with no key. On a laptop use ONE of:
+//   (a) local proxy: run tools/recipe_proxy.py and set API to "http://localhost:8765/v1/messages"
+//   (b) key in browser (demo only): set KEY, keep API as-is; header + KEY are added below.
+const API="https://api.anthropic.com/v1/messages", KEY="";
+const P=JSON.parse(document.getElementById("cat").textContent);   // {component_catalog, licensed_catalog}
+const CATALOG=[...Object.entries(P.component_catalog).map(([id,c])=>({id,...c,live:true})),
+               ...Object.entries(P.licensed_catalog).map(([id,c])=>({id,...c,live:false,tier:"licensed"}))];
+const EXAMPLES = ["raccoon family looking to settle down", "delivery driver with a box truck, mornings, hates tickets",
+  "I'm buying a house and I want a quiet street that doesn't flood", "food truck looking for a Friday night spot", "city crew: where should we send one truck to fix the most complaints"];
+
+// ---------------------------------------------------------------- state
+let weights={}, reasons={}, missing=[], showZero=true, win={days:[0,1,2,3,4,5,6],start:0,end:24,reason:""}, pickup=false;
+const $=id=>document.getElementById(id);
+
+// ---------------------------------------------------------------- agent
+async function propose(need){
+  $("status").textContent="Asking the agent…";
+  const catalog = CATALOG.filter(c=>!c.curveOnly&&c.tier!=="excluded").map(c=>({id:c.id,label:c.label,source:c.src,description:c.desc,available:c.live,tier:c.tier||(c.live?"live":"planned")}));
+  const sys = `You turn a user's need into a scoring recipe over a catalog of block-face datasets for Houston curbs.
+Return ONLY a JSON object, no prose, no markdown fences:
+{"name":string,"blurb":string,
+ "weights":{ "<component id>": number in [-1,1] },        // include ONLY components you actually use; positive rewards, negative penalizes
+ "reasons":{ "<component id>": string },                 // one short sentence per used component
+ "window":{"days":[0-6 ints, Monday=0],"start":0-23,"end":1-24,"reason":string},   // when this need applies; end may be < start to wrap midnight
+ "tie_to_pickup_night":boolean,                            // true only if the need depends on curbside bins (trash, scavenging)
+ "missing":[string]                                       // data you wanted that is not in the catalog at all (short phrases)
+}
+Rules: prefer 4-8 strong weights over many weak ones. You MAY use components with available=false; tier "planned" is free public data not yet joined, tier "licensed" is paid partner data. Use licensed data only when it materially improves the answer. Never invent component ids. Weights must make sense as signed contributions; do not use a component just because it exists.
+Catalog (tier "licensed" = paid partner data, not available today; you may still weight it and it will be shown greyed as a suggestion): ${JSON.stringify(catalog)}`;
+  const hdr={"Content-Type":"application/json"}; if(KEY){hdr["x-api-key"]=KEY;hdr["anthropic-version"]="2023-06-01";hdr["anthropic-dangerous-direct-browser-access"]="true";}
+  const r = await fetch(API,{method:"POST",headers:hdr,
+    body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,system:sys,messages:[{role:"user",content:need}]})});
+  const data = await r.json();
+  const text = (data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n");
+  const clean = text.replace(/```json|```/g,"").trim();
+  const j = JSON.parse(clean);
+  weights={}; reasons={}; missing=j.missing||[]; pickup=!!j.tie_to_pickup_night;
+  if(j.window){win={days:(j.window.days||[0,1,2,3,4,5,6]).filter(d=>d>=0&&d<=6),start:Math.max(0,Math.min(23,+j.window.start||0)),end:Math.max(1,Math.min(24,+j.window.end||24)),reason:j.window.reason||""};}
+  const ids=new Set(CATALOG.map(c=>c.id));
+  for(const [k,v] of Object.entries(j.weights||{})){ if(ids.has(k)) weights[k]=Math.max(-1,Math.min(1,+v||0)); else missing.push(k+" (unknown id)"); }
+  for(const [k,v] of Object.entries(j.reasons||{})) if(ids.has(k)) reasons[k]=v;
+  $("name").value=j.name||need; $("blurb").value=j.blurb||"";
+  $("status").textContent=`Proposed ${Object.keys(weights).length} weights and a time window. Tick, drag, then copy the JSON.`;
+  render();
+}
+
+// ---------------------------------------------------------------- render
+function render(){
+  const bySrc={}; CATALOG.forEach(c=>{(bySrc[c.src]=bySrc[c.src]||[]).push(c);});
+  let html="";
+  for(const [src,comps] of Object.entries(bySrc)){
+    const rows=comps.filter(c=>!c.curveOnly).filter(c=>showZero||weights[c.id]).map(c=>{
+      const w=weights[c.id]||0;
+      const lic=c.tier==="licensed";
+      return `<div class="row ${lic?"licensed":""} ${w?"":"zero"}">
+        <div><label style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" ${w&&!lic?"checked":""} ${lic?"disabled":""} data-c="${c.id}" style="margin-top:3px"><span><span class="n">${c.label}</span><div class="d">${c.desc}</div><div class="d" style="color:var(--dim)">${c.src}</div>${lic?`<button class="req" onclick="alert('Request access: ${c.label} — ${c.price}. Checkout goes here.')">unlock · ${c.price}</button>`:""}</span></label></div>
+        <div class="r">${reasons[c.id]||""}</div>
+        <input type="range" min="-1" max="1" step="0.05" value="${w}" data-k="${c.id}" ${lic?"disabled":""}>
+        <b class="${w>0?"p":w<0?"m":""}" data-v="${c.id}">${w.toFixed(2)}${lic?" 🔒":""}</b></div>`;}).join("");
+    if(rows) html+=`<div class="src">${src}</div>`+rows;
+  }
+  const ROADMAP=[["TABC","alcohol licenses (the honest nightlife layer)"],["TxDOT CRIS / HIN","crash history, High Injury Network"],["H-GAC / USFS","tree canopy fraction"],["NOAA / city","heat-island surface temperature"],["HCFCD","Harvey inundation extent, bayou buffers"],["Public Works","sidewalk inventory, ADA ramps, storm inlets"],["METRO GTFS","bus frequency per stop"],["GBFS","scooter / bike-share parked units"],["City permits","street closures, special events, sidewalk cafés"],["ParkHouston","loading zones, valet zones, citations"],["HCAD / County","tax delinquency, land bank lots"],["BARC","animal-service 311"],["iNaturalist / GBIF","raccoon sightings"],["Waymo","published service-area polygon"]];
+  html+=`<div class="src" style="margin-top:22px">Public data located, not yet joined (${ROADMAP.length})</div><div style="font-size:12px;color:var(--mut);line-height:1.7">`+ROADMAP.map(([s,d])=>`<span style="display:inline-block;margin:0 14px 2px 0"><b style="color:var(--fg);font-weight:500">${s}</b> · ${d}</span>`).join("")+`</div>`;
+  $("list").innerHTML=html;
+  $("list").querySelectorAll("input[type=checkbox]").forEach(cb=>cb.onchange=()=>{ if(!cb.checked){weights[cb.dataset.c]=0;} else if(!weights[cb.dataset.c]){weights[cb.dataset.c]=0.5;} render(); });
+  $("list").querySelectorAll("input[type=range]").forEach(r=>r.oninput=()=>{weights[r.dataset.k]=+r.value;const b=$("list").querySelector(`[data-v=${r.dataset.k}]`);b.textContent=(+r.value).toFixed(2);b.className=+r.value>0?"p":+r.value<0?"m":"";updateSide();});
+  const DN=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  $("days").innerHTML=DN.map((d,i)=>`<label style="display:inline-block;margin-right:8px"><input type="checkbox" value="${i}" ${win.days.includes(i)?"checked":""}> ${d}</label>`).join("");
+  $("days").querySelectorAll("input").forEach(c=>c.onchange=()=>{win.days=[...$("days").querySelectorAll("input:checked")].map(x=>+x.value); updateSide();});
+  const hh=i=>`${String(i%24).padStart(2,"0")}:00`;
+  $("wstart").innerHTML=[...Array(24).keys()].map(i=>`<option value="${i}" ${i===win.start?"selected":""}>${hh(i)}</option>`).join("");
+  $("wend").innerHTML=[...Array(24).keys()].map(i=>i+1).map(i=>`<option value="${i}" ${i===win.end?"selected":""}>${i===24?"24:00":hh(i)}</option>`).join("");
+  $("wstart").onchange=e=>{win.start=+e.target.value;updateSide();}; $("wend").onchange=e=>{win.end=+e.target.value;updateSide();};
+  $("wreason").textContent=win.reason||""; $("pickup").checked=pickup; $("pickup").onchange=e=>{pickup=e.target.checked;updateSide();};
+  updateSide();
+}
+function updateSide(){
+  const used=Object.entries(weights).filter(([k,v])=>v);
+  const live=used.filter(([k])=>CATALOG.find(c=>c.id===k).live).length;
+  const wrap=win.start>=win.end; $("summary").textContent=used.length?`${used.length} components · ${live} live, ${used.length-live} locked · ${win.days.length} day(s), ${String(win.start).padStart(2,"0")}:00–${win.end===24?"24:00":String(win.end).padStart(2,"0")+":00"}${wrap?" (overnight)":""}`:"";
+  const wanted=[...missing, ...used.filter(([k])=>!CATALOG.find(c=>c.id===k).live).map(([k])=>{const c=CATALOG.find(x=>x.id===k);return `${c.label} (${c.src})${c.tier==="licensed"?" · licensed, "+c.price:""}`;})];
+  $("missing").innerHTML=wanted.length?wanted.map(m=>`<li>${m}</li>`).join(""):"<li style='color:var(--dim)'>nothing</li>";
+  const rid=($("name").value||"custom").toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,"")||"custom";
+  const rec={[rid]:{label:$("name").value||"Custom recipe",audience:"custom",blurb:$("blurb").value||"",
+    weights:Object.fromEntries(used.filter(([k])=>CATALOG.find(c=>c.id===k).live)),
+    weights_locked:Object.fromEntries(used.filter(([k])=>!CATALOG.find(c=>c.id===k).live)),
+    window:{days:win.days,start:win.start,end:win.end}, curves:pickup?["garbage_night"]:[], reasons, missing:wanted}};
+  $("json").value=JSON.stringify(rec,null,2);
+}
+const R=P.recipes||{};
+$("premade").innerHTML=`<span style="font-size:11.5px;color:var(--mut);margin-right:6px">start from:</span>`+Object.entries(R).map(([id,r])=>`<button data-id="${id}" title="${r.blurb||""}">${r.label}</button>`).join("");
+$("premade").querySelectorAll("button").forEach(b=>b.onclick=()=>{const r=R[b.dataset.id]; weights={...r.weights}; reasons={...(r.reasons||{})}; missing=[...(r.missing||[])];
+  pickup=(r.curves||[]).includes("garbage_night"); win=r.window?{...r.window,reason:""}:{days:[0,1,2,3,4,5,6],start:0,end:24,reason:""};
+  $("name").value=r.label; $("blurb").value=r.blurb||""; $("status").textContent="Loaded a saved recipe. Tweak it or describe a new need."; render();});
+$("examples").innerHTML=`<span style="font-size:11.5px;color:var(--mut);margin-right:6px">or try:</span>`+EXAMPLES.map(e=>`<button>${e}</button>`).join("");
+$("examples").querySelectorAll("button").forEach(b=>b.onclick=()=>{$("need").value=b.textContent;$("go").click();});
+$("go").onclick=async()=>{const n=$("need").value.trim(); if(!n)return; try{await propose(n);}catch(e){$("status").textContent="Agent call failed: "+e.message;}};
+$("need").addEventListener("keydown",e=>{if(e.key==="Enter")$("go").click();});
+$("toggle").onclick=()=>{showZero=!showZero;$("toggle").textContent=showZero?"▾ hide unticked datasets":"▸ show all datasets";render();};
+["name","blurb"].forEach(id=>$(id).oninput=updateSide);
+$("copy").onclick=()=>navigator.clipboard.writeText($("json").value);
+$("dl").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([$("json").value],{type:"application/json"}));a.download="recipe.json";a.click();};
+render();
+</script>
+</body>
+</html>

@@ -123,7 +123,7 @@ faces_version = hashlib.sha1("".join(f["face_id"] for f in faces).encode()).hexd
 # ---------------------------------------------------------------- joins
 for f in load("parcels.geojson"):
     p = f["properties"]; cls = p.get("State_Clas")
-    if cls not in CLASSES: continue
+    if cls not in CLASSES and cls not in ("C1", "C2"): continue
     try: c = transform(to_ft, shape(f["geometry"])).centroid
     except Exception: continue
     i = tree.nearest(c)
@@ -207,6 +207,36 @@ for name, key, maxd in [("waste_missed.geojson","missed",300), ("dead_animals.ge
             c = Point(to_ft(p["Longitude"], p["Latitude"])); i = tree.nearest(c)
             if geoms[i].distance(c) <= maxd: faces[i][key] += 1
     except FileNotFoundError: pass
+# stop signs / signals within 100 ft (no-parking-near-control rule proxy), flood zones at midpoint, bikeway on face, park frontage
+def _pts(name):
+    try: return [Point(to_ft(*f["geometry"]["coordinates"])) for f in load(name) if f.get("geometry")]
+    except FileNotFoundError: return []
+ctl = _pts("traffic_signals.geojson") + _pts("stop_signs.geojson"); ctl_tree = STRtree(ctl) if ctl else None
+try:
+    fl = [(transform(to_ft, shape(f["geometry"])), f["properties"]) for f in load("flood_nfhl.geojson")]
+except FileNotFoundError: fl = []
+fl_tree = STRtree([g for g, _ in fl]) if fl else None
+try: bk = [transform(to_ft, shape(f["geometry"])) for f in load("bikeways.geojson")]
+except FileNotFoundError: bk = []
+bk_tree = STRtree(bk) if bk else None
+try: pk = [transform(to_ft, shape(f["geometry"])) for f in load("parks.geojson")]
+except FileNotFoundError: pk = []
+pk_tree = STRtree(pk) if pk else None
+for fc in faces:
+    mid = fc["_ft"].interpolate(0.5, normalized=True)
+    fc["ctl"] = int(bool(ctl_tree and any(ctl[i].distance(fc["_ft"]) <= 100 for i in ctl_tree.query(fc["_ft"].buffer(100))))) if ctl_tree else 0
+    fc["flood"] = 0.0
+    if fl_tree:
+        for i in fl_tree.query(mid):
+            if fl[i][0].contains(mid):
+                z = fl[i][1].get("FLD_ZONE", ""); fc["flood"] = 1.0 if fl[i][1].get("SFHA_TF") == "T" else (0.5 if "X" in z and "0.2" in (fl[i][1].get("ZONE_SUBTY") or "") else 0.0); break
+    fc["bike"] = int(bool(bk_tree and any(bk[i].distance(fc["_ft"]) <= 40 for i in bk_tree.query(fc["_ft"].buffer(40))))) if bk_tree else 0
+    fc["park"] = int(bool(pk_tree and any(pk[i].distance(fc["_ft"]) <= 60 for i in pk_tree.query(fc["_ft"].buffer(60))))) if pk_tree else 0
+    fc["light311"] = 0
+for pt in sr_pts:
+    if re.search(r"street ?light|lighting", pt["type"], re.I):
+        for fc in faces:
+            if fc["face_id"] == pt["face_id"]: fc["light311"] += 1; break
 for pt in sr_pts:
     if re.search(r"tree", pt["type"], re.I):
         for fc in faces:
@@ -217,7 +247,7 @@ W = A["A06_pressure_weights"]["value"]; WR = A["A14_raccoon_weights"]["value"]
 recs = []
 for fc in faces:
     lu = {k: round(v, 3) for k, v in fc["landuse"].items() if v > 0}
-    demand = [round(sum(lu.get(c, 0) * CLASSES[c]["curve"][h] for c in lu)) for h in H] if lu else None
+    demand = [round(sum(lu.get(c, 0) * CLASSES[c]["curve"][h] for c in lu if c in CLASSES)) for h in H] if any(c in CLASSES for c in lu) else None
     gross = max(0, int(fc["length_ft"] // A["A02_space_length_ft"]["value"]))
     mask = [False]*168; rule_text = []; verified = False
     for r in fc["rules"]:
@@ -267,6 +297,9 @@ for fc in faces:
         "stops": min(1.0, len(fc["stops"]) / 2),
         "capacity": min(1.0, fc["gross"] / 20),
         "restricted": 1.0 if any(fc["mask"]) else 0.0,
+        "vacant": min(1.0, (fc["landuse"].get("C1", 0) + fc["landuse"].get("C2", 0)) / 1.0),
+        "stop_ctl": float(fc["ctl"]), "flood": fc["flood"], "bike_lane": float(fc["bike"]), "park": float(fc["park"]),
+        "dark311": min(1.0, fc["light311"] / 2),
     }
     curves = {
         "nocturnal": RACCOON_CURVE,
@@ -286,8 +319,10 @@ for fc in faces:
     scores = {}
     for rid, r in RECIPES.items():
         w = r["weights"]; tot = sum(abs(v) for v in w.values()) or 1
-        base_r = max(0.0, sum(w[k] * comp[k] for k in w) / tot)
-        ids = [i for i in (curve_id(c) for c in r["curves"]) if i] or ["flat"]
+        base_r = max(0.0, sum(w[k] * comp.get(k, 0) for k in w) / tot)
+        ids = [i for i in (curve_id(c) for c in r.get("curves", [])) if i]
+        if r.get("window"): ids.append("win:" + ",".join(map(str, r["window"]["days"])) + f":{r['window']['start']}:{r['window']['end']}")
+        ids = ids or ["flat"]
         scores[rid] = {"base": round(base_r, 3), "curves": ids} if base_r > 0 else None
     conf = "low" if not fc["rule_verified"] else "medium"
     if not fc["demand"]: conf = "unknown"
@@ -351,7 +386,10 @@ doc = {"schema_version": "1.0.0", "generated_at": NOW, "faces_version": faces_ve
        "recipes": RECIPES,
        "curve_table": {"nocturnal": RACCOON_CURVE, "flat": [1.0]*168, "late": [1.0 if (h%24) >= 22 or (h%24) <= 2 else 0.2 for h in H],
                        "commercial": [round(min(1.0, x/40), 3) for x in CLASSES["F1"]["curve"]]}
-                      | {f"night_before:{d}": [1.0 if (((h//24) == (d-1) % 7 and h%24 >= 20) or ((h//24) == d and h%24 < 7)) else 0.0 for h in H] for d in range(7)},
+                      | {f"night_before:{d}": [1.0 if (((h//24) == (d-1) % 7 and h%24 >= 20) or ((h//24) == d and h%24 < 7)) else 0.0 for h in H] for d in range(7)}
+                      | {("win:" + ",".join(map(str, r["window"]["days"])) + f":{r['window']['start']}:{r['window']['end']}"):
+                         [1.0 if ((h//24) in r["window"]["days"] and ((r["window"]["start"] <= h%24 < r["window"]["end"]) if r["window"]["start"] < r["window"]["end"] else (h%24 >= r["window"]["start"] or h%24 < r["window"]["end"]))) else 0.0 for h in H]
+                         for r in RECIPES.values() if r.get("window")},
        "score_formula": "score[h] = round(100 * scores[rid].base * max(curve_table[c][h] for c in scores[rid].curves))",
        "presets": [{"h": 4*24+22, "mode": "curb", "label": "Fri 10 PM — commercial peak"},
                    {"h": 5*24+1, "mode": "curb", "label": "Sat 1 AM — permit hours"},
@@ -365,11 +403,62 @@ print(f"faces={len(recs)} in_area={sum(r['in_analysis_area'] for r in recs)} fac
       f"size={out.stat().st_size/1e6:.1f} MB")
 
 # ---------------------------------------------------------------- UI packet (compact)
+def _events():
+    """Singular, icon-worthy events: dead-animal pickups, missed collections, dumping/dumpster 311."""
+    ev = []
+    try:
+        for f in load("dead_animals.geojson"):
+            q = f["properties"]
+            if q.get("Latitude") and q.get("Longitude"): ev.append({"t": "roadkill", "lon": round(q["Longitude"],5), "lat": round(q["Latitude"],5), "d": (q.get("ArrivalTime") or "")[:10] if isinstance(q.get("ArrivalTime"), str) else None})
+    except FileNotFoundError: pass
+    try:
+        for f in load("waste_missed.geojson"):
+            q = f["properties"]
+            if q.get("Latitude") and q.get("Longitude"):
+                ev.append({"t": "missed", "lon": round(q["Longitude"],5), "lat": round(q["Latitude"],5), "m": (q.get("MaterialType") or "")[:20], "d": None})
+    except FileNotFoundError: pass
+    for p in sr_pts:
+        if re.search(r"dump", p["type"], re.I): ev.append({"t": "dumping", "lon": round(p["lon"],5), "lat": round(p["lat"],5), "d": p["date"]})
+    return ev
 def _bits(m): return "".join("1" if x else "0" for x in m) if m else None
-lite = {"generated_at": NOW, "faces_version": faces_version, "modes": doc["modes"], "recipes": RECIPES, "curve_table": doc["curve_table"],
+COMPONENT_CATALOG = {
+    "res":       {"label": "Residential frontage", "desc": "Acres of A1/B1/B2 parcels on the face. Bins on the curb, residents needing parking.", "src": "HCAD"},
+    "com":       {"label": "Commercial frontage", "desc": "Acres of F1 parcels. Dumpsters, customers, deliveries, late activity.", "src": "HCAD"},
+    "trash311":  {"label": "Trash-related 311", "desc": "Trash, dumping, missed pickup, nuisance cases within 300 ft.", "src": "311"},
+    "parking311":{"label": "Parking-related 311", "desc": "Parking violation and meter complaints within 300 ft.", "src": "311"},
+    "missed":    {"label": "Missed collections", "desc": "Solid Waste missed-pickup exceptions logged at the face.", "src": "SWM Routeware"},
+    "roadkill":  {"label": "Dead-animal pickups", "desc": "Solid Waste dead-animal collection calls at the face. Danger signal.", "src": "SWM"},
+    "trees":     {"label": "Big-tree proxy", "desc": "311 tree trim/removal requests. Canopy, denning, shade.", "src": "311"},
+    "adt_low":   {"label": "Quiet street", "desc": "Inverse of traffic volume (1 = no traffic).", "src": "Public Works ADT"},
+    "adt_high":  {"label": "Busy street", "desc": "Traffic volume (1 = 30k+ vehicles/day).", "src": "Public Works ADT"},
+    "stops":     {"label": "Bus stops", "desc": "METRO stops on the face.", "src": "METRO GTFS"},
+    "capacity":  {"label": "Curb capacity", "desc": "floor(length/22) spaces, 1 = 20+.", "src": "COH centerline"},
+    "restricted":{"label": "Permit-restricted", "desc": "Any residential permit or PBD restriction during the week.", "src": "RPP / PBD"},
+    "vacant":    {"label": "Vacant lots", "desc": "Acres of vacant parcels (C1/C2) on the face.", "src": "HCAD"},
+    "stop_ctl":  {"label": "Stop sign / signal nearby", "desc": "Traffic control within 100 ft; no-parking-near-intersection rule proxy.", "src": "TDO"},
+    "flood":     {"label": "Flood zone", "desc": "1 = FEMA special flood hazard area (AE), 0.5 = 500-yr, 0 = outside.", "src": "FEMA NFHL"},
+    "bike_lane": {"label": "Bike lane on face", "desc": "Existing bikeway within 40 ft; replaces curb parking.", "src": "COH Bikeways"},
+    "park":      {"label": "Park frontage", "desc": "City park within 60 ft.", "src": "COH Parks"},
+    "dark311":   {"label": "Streetlight outages", "desc": "311 streetlight/lighting cases at the face.", "src": "311"},
+}
+LICENSED_CATALOG = {
+    "meters":       {"label": "Meter transactions", "desc": "Pay-by-plate occupancy by space and hour. Turns pressure from model into measurement.", "src": "ParkHouston (data agreement)", "price": "city partnership"},
+    "waymo":        {"label": "Robotaxi pickup/dropoff density", "desc": "Rideshare curb demand by block and hour.", "src": "Waymo", "price": "partner API"},
+    "foot_traffic": {"label": "Foot-traffic panel", "desc": "Anonymized visits by venue and hour.", "src": "Advan / Placer", "price": "from ~$500/mo"},
+    "popular_times":{"label": "Popular times", "desc": "Busy-ness curve per venue.", "src": "Google Places", "price": "API usage"},
+    "satellite":    {"label": "Daily satellite imagery", "desc": "Count parked cars from orbit, daily revisit.", "src": "Planet / Maxar", "price": "per km²"},
+    "tabc":         {"label": "Licensed bars & restaurants", "desc": "TABC licenses geocoded to the face (public, needs geocoding work).", "src": "TABC", "price": "free, not yet joined"},
+}
+CURVE_CATALOG = {
+    "flat": "all hours equal", "nocturnal": "raccoon hours, 21:00–05:00, weekends stronger", "late": "22:00–02:00",
+    "commercial": "business + evening commercial hours", "garbage_night": "evening before garbage day (per face)",
+    "recycling_night": "evening before recycling day (per face)", "yard_night": "evening before yard-waste day (per face)",
+}
+lite = {"generated_at": NOW, "component_catalog": COMPONENT_CATALOG, "licensed_catalog": LICENSED_CATALOG, "curve_catalog": CURVE_CATALOG, "faces_version": faces_version, "modes": doc["modes"], "recipes": RECIPES, "curve_table": doc["curve_table"],
         "classes": {k: {"label": v["label"], "curve": v["curve"]} for k, v in CLASSES.items()}, "raccoon_curve": RACCOON_CURVE,
         "normalization": doc["normalization"], "presets": doc["presets"],
         "points": {"sr311": [{"kind": p["kind"], "lon": p["lon"], "lat": p["lat"], "h": p["h"], "type": p["type"][:40]} for p in sr_pts],
+                   "events": _events(),
                    "metro_stops": doc["points"]["metro_stops"], "adt_stations": [{k: a[k] for k in ("lon","lat","adt","segment")} for a in doc["points"]["adt_stations"]]},
         "faces": [{"id": r["face_id"], "label": r["display_label"], "g": [[round(x,5), round(y,5)] for x, y in r["geometry"]["coordinates"]], "pbd": r["in_analysis_area"],
                    "cap": r["gross_capacity_spaces"], "lu": r["parcel_summary"]["acres_by_class"], "mask": _bits(r["regulation_mask"]), "rules": r["regulation_rules"]["text"],

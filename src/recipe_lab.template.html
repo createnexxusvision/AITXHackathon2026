@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CurbFusion Recipe Lab</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+  :root{--bg:#0f1115;--panel:rgba(18,20,26,.95);--fg:#e8e8ea;--mut:#9aa0ab;--acc:#8a93a6;--line:#262a33;--pos:#5ec26a;--neg:#e0574f;
+        box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+  html{scroll-padding-top:env(safe-area-inset-top,0px)}
+  html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--fg);font:13.5px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  #wrap{display:grid;grid-template-columns:400px 1fr;height:100%}
+  #lab{overflow:auto;background:var(--panel);border-right:1px solid var(--line);padding:14px 16px}
+  #map{background:var(--bg)} .leaflet-container{background:var(--bg)}
+  h1{font-size:18px;margin:0 0 2px} h1 small{display:block;font-size:12px;color:var(--mut);font-weight:400}
+  h2{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.6px;margin:16px 0 6px}
+  input[type=text],select,textarea,button{background:#1b1f27;color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font:inherit}
+  input[type=text]{width:100%}
+  .comp{display:grid;grid-template-columns:1fr 110px 42px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--line)}
+  .comp .n{font-weight:600} .comp .d{font-size:11.5px;color:var(--mut)} .comp .s{color:var(--mut);font-size:10.5px}
+  .comp input[type=range]{width:110px;accent-color:var(--acc)}
+  .comp b{font-variant-numeric:tabular-nums;text-align:right;font-size:12px}
+  .comp b.p{color:var(--pos)} .comp b.m{color:var(--neg)}
+  .curves label{display:inline-block;margin:3px 8px 3px 0;font-size:12.5px}
+  .chips button{font-size:12px;margin:0 6px 6px 0;padding:4px 9px;border-radius:14px} .chips button.on{background:#2a3040;border-color:#4a5468}
+  .row{display:flex;gap:8px;align-items:center;margin-top:8px}
+  #hour{flex:1;accent-color:var(--acc)} #hl{font-variant-numeric:tabular-nums;font-weight:600;min-width:80px}
+  #top div{display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px dashed var(--line);font-size:12.5px}
+  textarea{width:100%;height:120px;font:11.5px ui-monospace,Menlo,Consolas,monospace}
+  .btns button{margin:6px 6px 0 0}
+  .legend{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--mut);margin-top:8px}
+  .legend .bar{flex:1;height:8px;border-radius:4px;background:linear-gradient(90deg,#2b83ba,#ffffbf,#d7191c)}
+  @media (max-width:900px){#wrap{grid-template-columns:1fr;grid-template-rows:55% 45%}}
+  .tiles-dark{filter:invert(1) hue-rotate(180deg) brightness(.92) contrast(.9) saturate(.7)}
+</style>
+</head>
+<body>
+<div id="wrap">
+<div id="lab">
+  <h1>🧪 Recipe Lab<small>CurbFusion · describe a need as weights over the curb catalog</small></h1>
+  <h2>Start from a recipe</h2>
+  <div class="chips" id="preset"></div>
+  <h2>Name it</h2>
+  <input type="text" id="name" name="cf_recipe_title" autocomplete="off" placeholder="e.g. 🦝 Raccoon with a plus-one">
+  <input type="text" id="blurb" name="cf_recipe_blurb" autocomplete="off" placeholder="one line: what this recipe is looking for" style="margin-top:6px">
+  <h2>Components  <span style="float:right;font-weight:400;text-transform:none;letter-spacing:0">drag left = penalize, right = reward</span></h2>
+  <div id="comps"></div>
+  <h2>When does this apply?</h2>
+  <div class="curves" id="days"></div>
+  <div class="row" style="font-size:12.5px">from <select id="wstart"></select> to <select id="wend"></select></div>
+  <details style="margin-top:6px"><summary style="font-size:12px;color:var(--mut);cursor:pointer">advanced: schedule-tied curves</summary><div class="curves" id="curves"></div></details>
+  <h2>Day &amp; hour</h2>
+  <div class="row"><input id="hour" type="range" min="0" max="167" value="118" title="hour of week"><span id="hl"></span></div>
+  <div class="legend"><span>score</span><span>0</span><div class="bar"></div><span>100</span></div>
+  <div style="font-size:11.5px;color:var(--mut);margin-top:4px">Map colors = this recipe’s score at that day and hour. Highest-scoring block faces:</div>
+  <div id="top" style="margin-top:4px"></div>
+  <h2>Recipe JSON</h2>
+  <textarea id="json" readonly></textarea>
+  <div class="btns">
+    <button id="copy">copy</button>
+    <button id="dl">download recipes.json (all + this)</button>
+    <button id="reset">reset</button>
+  </div>
+  <div style="font-size:11px;color:var(--mut);margin-top:10px">score[h] = 100 × Σ(w·component)/Σ|w| × max(curve[h]). Components are 0–1 per block face from the sources shown. Proxies and assumptions, not measurements.</div>
+</div>
+<div id="map"></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script id="data" type="application/json">__DATA__</script>
+<script>
+const D=JSON.parse(document.getElementById("data").textContent);
+const DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]; const $=id=>document.getElementById(id);
+const CAT=D.component_catalog, CUR=D.curve_catalog;
+let w={}, curves=new Set(), h=118, win={days:[0,1,2,3,4,5,6],start:0,end:24};
+function winCurve(hh){const d=Math.floor(hh/24),t=hh%24; if(!win.days.includes(d))return 0; return (win.start<win.end?(t>=win.start&&t<win.end):(t>=win.start||t<win.end))?1:0;}
+
+// ---------- scoring ----------
+function curveId(f,c){ if(c==="garbage_night"||c==="recycling_night"||c==="yard_night"){const day=dayOf(f.sched[c.split("_")[0]]);return day==null?null:`night_before:${day}`;} return c; }
+const DN={MONDAY:0,TUESDAY:1,WEDNESDAY:2,THURSDAY:3,FRIDAY:4,SATURDAY:5,SUNDAY:6,MO:0,TU:1,WE:2,TH:3,FR:4};
+function dayOf(raw){ if(!raw)return null; const t=String(raw).toUpperCase().replace("YW_",""); for(const k in DN){if(t.startsWith(k))return DN[k];} const m=t.match(/(MO|TU|WE|TH|FR)/); return m?DN[m[1]]:null; }
+function base(f){ let tot=0,acc=0; for(const k in w){ if(!w[k])continue; tot+=Math.abs(w[k]); acc+=w[k]*(f.comp[k]??0);} return tot?Math.max(0,acc/tot):null; }
+function score(f,hh){ const b=base(f); if(b==null||b===0)return null; let c=winCurve(hh); for(const cu of curves){const id=curveId(f,cu); if(id&&D.curve_table[id])c=Math.max(c,D.curve_table[id][hh]);} return Math.round(100*b*c); }
+function ramp(t){t=Math.max(0,Math.min(1,t));const c=t<.5?[43+212*t*2,131+124*t*2,186+5*t*2]:[255-40*(t-.5)*2,255-230*(t-.5)*2,191-163*(t-.5)*2];return `rgb(${c.map(Math.round)})`;}
+
+// ---------- map ----------
+const map=L.map("map",{zoomControl:false,preferCanvas:true}); L.control.zoom({position:"bottomright"}).addTo(map);
+const BLANK="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+const _dark=L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap contributors",errorTileUrl:BLANK,className:"tiles-dark"}).addTo(map);
+const ctx=L.layerGroup().addTo(map); D.faces.forEach(f=>ctx.addLayer(L.polyline(f.g.map(([x,y])=>[y,x]),{color:"#3a3f4a",weight:7,opacity:.35,interactive:false})));
+const polys=D.faces.map(f=>{const pl=L.polyline(f.g.map(([x,y])=>[y,x]),{weight:3});pl.f=f;pl.bindTooltip(()=>`${f.label} · ${score(f,h)??"—"}`);pl.addTo(map);return pl;});
+const home=()=>{try{map.invalidateSize();map.fitBounds([[29.758,-95.433],[29.786,-95.367]],{padding:[10,10]});map.setMaxBounds([[29.74,-95.46],[29.805,-95.34]]);}catch(e){}};
+home(); setTimeout(home,300); setTimeout(home,1500); window.addEventListener("resize",()=>setTimeout(home,100));
+
+function render(){
+  $("hl").textContent=`${DAYS[Math.floor(h/24)]} ${String(h%24).padStart(2,"0")}:00`;
+  const ranked=[];
+  for(const pl of polys){const v=score(pl.f,h); pl.setStyle({color:v==null?"#2c313b":ramp(v/100),weight:v==null?1:3,opacity:v==null?.5:.95}); if(v!=null)ranked.push([v,pl.f.label]);}
+  ranked.sort((a,b)=>b[0]-a[0]);
+  $("top").innerHTML=ranked.slice(0,5).map(([v,l])=>`<div><span>${l}</span><b>${v}</b></div>`).join("")||"<div><span>no components weighted</span></div>";
+  const rid=($("name").value||"custom").toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,"")||"custom";
+  const rec={[rid]:{label:$("name").value||"Custom recipe",audience:"custom",blurb:$("blurb").value||"",
+    weights:Object.fromEntries(Object.entries(w).filter(([k,v])=>v)),window:{days:win.days,start:win.start,end:win.end},curves:[...curves]}};
+  $("json").value=JSON.stringify(rec,null,2);
+}
+
+// ---------- UI ----------
+$("comps").innerHTML=Object.entries(CAT).map(([k,c])=>`<div class="comp"><div><div class="n">${c.label}</div><div class="d">${c.desc}</div><div class="s">${c.src} · <code>${k}</code></div></div>
+  <input type="range" min="-1" max="1" step="0.05" value="0" data-k="${k}"><b data-v="${k}">0</b></div>`).join("");
+$("comps").querySelectorAll("input").forEach(r=>r.oninput=()=>{w[r.dataset.k]=+r.value;const b=$("comps").querySelector(`[data-v=${r.dataset.k}]`);b.textContent=(+r.value).toFixed(2);b.className=+r.value>0?"p":+r.value<0?"m":"";render();});
+$("curves").innerHTML=Object.entries(CUR).filter(([k])=>/night|nocturnal|commercial/.test(k)).map(([k,d])=>`<label title="${d}"><input type="checkbox" value="${k}"> ${k}</label>`).join("");
+$("curves").querySelectorAll("input").forEach(c=>c.onchange=()=>{c.checked?curves.add(c.value):curves.delete(c.value); render();});
+const DNAMES=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"], hh=i=>`${String(i%24).padStart(2,"0")}:00`;
+$("days").innerHTML=DNAMES.map((d,i)=>`<label><input type="checkbox" value="${i}" checked> ${d}</label>`).join("");
+$("days").querySelectorAll("input").forEach(c=>c.onchange=()=>{win.days=[...$("days").querySelectorAll("input:checked")].map(x=>+x.value);render();});
+$("wstart").innerHTML=[...Array(24).keys()].map(i=>`<option value="${i}">${hh(i)}</option>`).join(""); $("wend").innerHTML=[...Array(24).keys()].map(i=>i+1).map(i=>`<option value="${i}" ${i===24?"selected":""}>${i===24?"24:00":hh(i)}</option>`).join("");
+$("wstart").onchange=e=>{win.start=+e.target.value;render();}; $("wend").onchange=e=>{win.end=+e.target.value;render();};
+$("hour").oninput=e=>{h=+e.target.value;render();};
+["name","blurb"].forEach(id=>$(id).oninput=render);
+$("preset").innerHTML=Object.entries(D.recipes).map(([id,r])=>`<button data-id="${id}" title="${r.blurb||""}">${r.label}</button>`).join("")+`<button data-id="">blank</button>`;
+$("preset").querySelectorAll("button").forEach(b=>b.onclick=()=>{load(b.dataset.id);$("preset").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));});
+function load(id){ w={}; curves=new Set(); win={days:[0,1,2,3,4,5,6],start:0,end:24};
+  if(id){const r=D.recipes[id]; w={...r.weights}; curves=new Set((r.curves||[]).filter(c=>c!=="flat"&&c!=="late")); if(r.window)win={...r.window}; if((r.curves||[]).includes("late"))win={days:[0,1,2,3,4,5,6],start:22,end:2}; $("name").value=r.label; $("blurb").value=r.blurb||"";}
+  else {$("name").value="";$("blurb").value="";}
+  $("days").querySelectorAll("input").forEach(c=>c.checked=win.days.includes(+c.value)); $("wstart").value=win.start; $("wend").value=win.end;
+  $("comps").querySelectorAll("input").forEach(r=>{r.value=w[r.dataset.k]||0; r.dispatchEvent(new Event("input"));});
+  $("curves").querySelectorAll("input").forEach(c=>c.checked=curves.has(c.value)); render(); }
+$("reset").onclick=()=>load("");
+$("copy").onclick=()=>navigator.clipboard.writeText($("json").value);
+$("dl").onclick=()=>{const all={...D.recipes,...JSON.parse($("json").value)}; const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(all,null,2)],{type:"application/json"}));a.download="recipes.json";a.click();};
+load("raccoon_family"); const _b=$("preset").querySelector('[data-id="raccoon_family"]'); if(_b)_b.classList.add("on");
+</script>
+</body>
+</html>

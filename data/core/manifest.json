@@ -1,11 +1,11 @@
 {
  "faces_version": "51709a97bd",
  "schema_version": "1.0.0",
- "generated_at": "2026-09-19T20:15:12+00:00",
- "producer_commit": null,
+ "generated_at": "2026-09-19T22:33:27+00:00",
+ "producer_commit": "502ff16",
  "crs_measure": "EPSG:2278 (US survey ft)",
- "face_count": 2974,
- "in_analysis_area": 364,
+ "face_count": 1309,
+ "in_analysis_area": 362,
  "bbox": [
   -95.42420794659994,
   29.766698119853018,

@@ -98,5 +98,103 @@
     "curves": [
       "flat"
     ]
+  },
+  "food_truck_friday": {
+    "label": "🌮 Food truck, Friday night",
+    "audience": "human",
+    "blurb": "Commercial frontage, room to park a truck, foot traffic implied by bars, not a bus stop, not a bike lane.",
+    "weights": {
+      "com": 0.5,
+      "capacity": 0.4,
+      "stops": -0.5,
+      "bike_lane": -0.6,
+      "stop_ctl": -0.2,
+      "parking311": -0.2
+    },
+    "window": {
+      "days": [
+        4,
+        5
+      ],
+      "start": 17,
+      "end": 1
+    },
+    "curves": [],
+    "reasons": {
+      "com": "customers come from commercial blocks",
+      "capacity": "a truck needs 2–3 contiguous spaces",
+      "stops": "can't block a stop",
+      "bike_lane": "ticketable",
+      "stop_ctl": "no parking near intersections",
+      "parking311": "complaint-prone blocks get patrolled"
+    }
+  },
+  "homebuyer_quiet_dry": {
+    "label": "🏠 Homebuyer: quiet and dry",
+    "audience": "human",
+    "blurb": "Residential street, low traffic, out of the floodplain, parks and trees nearby, not a nightlife spillover block.",
+    "weights": {
+      "res": 0.4,
+      "adt_low": 0.4,
+      "flood": -1.0,
+      "park": 0.3,
+      "trees": 0.2,
+      "com": -0.3,
+      "parking311": -0.2
+    },
+    "window": {
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "start": 0,
+      "end": 24
+    },
+    "curves": [],
+    "reasons": {
+      "flood": "FEMA AE zone is a hard no",
+      "adt_low": "quiet street",
+      "res": "residential frontage",
+      "park": "green space nearby",
+      "trees": "canopy proxy",
+      "com": "avoid commercial spillover",
+      "parking311": "parking fights"
+    }
+  },
+  "city_ops_one_truck": {
+    "label": "🚛 City ops: one truck, most fixes",
+    "audience": "human",
+    "blurb": "Stack missed pickups, dumping, dead-animal calls and streetlight outages on the same block; send one crew.",
+    "weights": {
+      "missed": 0.4,
+      "trash311": 0.3,
+      "roadkill": 0.2,
+      "dark311": 0.3,
+      "parking311": 0.1
+    },
+    "window": {
+      "days": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start": 7,
+      "end": 16
+    },
+    "curves": [],
+    "reasons": {
+      "missed": "logged exceptions are verified misses",
+      "trash311": "dumping and nuisance cases",
+      "roadkill": "pickup calls",
+      "dark311": "lighting outages, same crew route",
+      "parking311": "low weight; different division"
+    }
   }
 }
