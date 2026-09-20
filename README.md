@@ -87,19 +87,79 @@ python -m http.server
 └── README.md
 ```
 
+## Architecture
+
+```mermaid
+flowchart LR
+  subgraph Sources["Houston open data (no keys)"]
+    A[HCAD parcels]:::s --> P
+    B[COH road centerlines]:::s --> P
+    C[Residential permit parking]:::s --> P
+    D[Public Works ADT counts]:::s --> P
+    E[311 service requests]:::s --> P
+    F[Solid Waste: pickup areas,<br/>missed collections, dead-animal calls]:::s --> P
+    G[METRO GTFS stops]:::s --> P
+    H[FEMA NFHL flood zones]:::s --> P
+    I[COH bikeways, parks,<br/>signals & stop signs]:::s --> P
+  end
+  P["scripts/pull_corridor_data.py<br/>(bbox → raw GeoJSON)"] --> M
+  M["scripts/core/build_core.py<br/>block faces × hour-of-week<br/>24 components, 0–1 per face"] --> K["data/corridor_lite.json"]
+  R["data/core/recipes.json<br/>signed weights + time window"] --> M
+  K --> UI["src/curbfusion.html<br/>map · 9 corridors · scrubber"]
+  K --> LAB["src/recipe_lab.html<br/>sliders over the catalog"]
+  K --> AG["src/recipe_agent.html<br/>sentence → recipe (Claude API)"]
+  AG -. save / open on map .-> UI
+  classDef s fill:#1b1f27,stroke:#3a4150,color:#e8e8ea;
+```
+
+Scoring runs in the browser: `score[h] = 100 × Σ(w·component)/Σ|w| × window[h]`. The agent gets the component catalog plus the user's sentence and returns weights, reasons, a time window, and a list of data it wanted but the catalog lacks.
+
+## Datasets & provenance
+
+All public, pulled live over HTTPS with no authentication. Sources, retrieval dates, and counts are recorded in `data/core/manifest.json`; every modeling constant in `data/core/assumptions.json`. No synthetic data. Counts below are for the Washington Ave corridor's full-depth pull; the other eight corridors carry parcels/centerlines/permit segments only (see [Corridors & scaling](#corridors--scaling-beyond-one-street) above).
+
+| Dataset | Publisher / endpoint | Used for |
+|---|---|---|
+| HCAD parcels (4.2k) | City of Houston GIS `HCAD_Parcels` | land-use acreage per face (A1/B1/B2/F1/C1/C2) |
+| Road centerlines (2.7k) | City of Houston GIS `COH_RoadCenterline` | block-face geometry, capacity |
+| Residential Permit Parking (79) | City of Houston GIS `Residential_Parking_Permit_3` | time-based restrictions |
+| ADT traffic counts (122 stations) | Public Works TDO `Traffic_gx` + assignments table | traffic volume |
+| 311 service requests (2k, multi-year open snapshot) | `mycity2.houstontx.gov` 311 map services | trash/parking/tree/streetlight components |
+| Solid Waste pickup areas (garbage / recycling / heavy / yard) | City of Houston GIS `COH_Solid_Waste_*` | pickup-night curves |
+| Missed collections (3.1k), dead-animal calls (387) | City of Houston GIS `RoutewareCollectionExceptions`, `DeadAnimalCollection` | event components |
+| METRO stops (204) | METRO GTFS static `stops.txt` | transit context |
+| FEMA NFHL flood zones (98 polygons) | `hazards.fema.gov` NFHL layer 28 | flood component |
+| Bikeways (471), parks (39), signals (99), stop signs (1.6k) | City of Houston GIS / TDO | supply & context components |
+| Washington Ave PBD boundary (2013) | data.houstontx.gov | scenario boundary |
+
+Licensed / partner datasets shown greyed in the Recipe Agent (meter transactions, citations, Waymo pickups, foot-traffic panels, Popular Times, satellite imagery) are **not** included; they are surfaced as the agent's wishlist.
+
+## Known limitations & next steps
+
+- Scores are uncalibrated proxies with per-face `confidence`; nothing is measured occupancy.
+- 311 coverage is a multi-year open-case snapshot (report-time bins), not a complete observation window.
+- The Washington Ave permit rule (Thu–Sun 18–02) is a labeled scenario, not verified law.
+- Full-depth data covers one ~20 km² rectangle; the eight other corridors carry parcels, centerlines, and permit segments only. City ArcGIS services throttle deep pagination, which has so far stopped a citywide pull.
+- Bikeway join (40 ft) over-matches on signed shared streets.
+
+Next: citywide pull as a tiled nightly job served as vector tiles (PMTiles), recipe scoring per viewport; TABC licenses, crash history, tree canopy, bus frequency as new components; meter transactions from ParkHouston to calibrate the model; recipes as the product.
+
+## Reproduce the demo
+
+No env vars are needed for the map or Recipe Lab. Recipe Agent needs `ANTHROPIC_API_KEY` (see [Getting Started](#getting-started) above); sample `.env`:
+
+```
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
 ## Demo
 
-- [ ] Live demo runs end to end without crashing
-- [ ] Recording as backup (judges prefer live)
+- Video: `<LOOM LINK>` — add once recorded (see [docs/LOOM_SCRIPT.md](docs/LOOM_SCRIPT.md))
+- Working app: open `src/curbfusion.html` (no server needed); Recipe Agent at `src/recipe_agent.html`.
 
-## Submission Checklist
+## Team — Trash Pandas
 
-- [ ] Project submitted before 7:00 PM deadline
-- [ ] Track selected and clearly stated
-- [ ] README explains problem, solution, and customer/user
-- [ ] Demo works live
-- [ ] Team members listed below
-
-## Team
-
-- TBD
+| Name | Role | Contact |
+|---|---|---|
+| Danny | frontend, map, day/night, corridors, search/share, integration | — |
+| Brian | data pipeline (18+ public layers), block-face model, scoring & recipe system, Recipe Agent, docs | — |
