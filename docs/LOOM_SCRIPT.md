@@ -1,108 +1,110 @@
-# Loom script — CurbFusion MVP overview (target: ~3.5 min, flexible 2-5 min)
+# Loom script — CurbFusion MVP overview (target: ~4 min, flexible 2-5 min)
 
-Read the SAY lines like you're talking to a person, not reading bullets — pause where there's a
-line break. ON SCREEN tells you what to click/show right before or during that line. Cut anything
-in `[brackets]` if you're running long; it's marked optional.
+Merged from the team's pitch script + the earlier draft. Read the SAY lines like you're talking
+to a person — pause at line breaks. ON SCREEN tells you what to click right before/during that
+line. `[bracketed]` notes are production notes or optional cuts, not spoken.
+
+**Production note before you hit record:** the Recipe Agent needs a live API key or the local
+proxy running to actually call Claude — if that's not wired up yet, click one of the **"start
+from"** saved-recipe chips (e.g. "Raccoon family — settle down") instead of typing a live prompt
+in section 5. It loads instantly and shows the same weighted, reasoned result without depending
+on a network call going out during the recording.
 
 ---
 
-## 1. Hook (0:00–0:25)
+## 1. Cold open (0:00–0:15)
 
-**ON SCREEN:** Open `curbfusion.html`, already on Washington Ave, mode set to a Raccoon recipe,
-hour set to Wed/Fri ~22:00. Just let it sit on screen for a beat before talking.
-
-**SAY:**
-> "The City of Houston publishes garbage-day polygons, missed-pickup reports, dead-animal calls,
-> tree-trim requests, and traffic counts. None of them mention raccoons.
->
-> Fuse them together, and they answer the question anyway."
->
-> [click the block face that's lit up] "Wednesday, 10 PM, the Heights — best night of the week to
-> be a raccoon."
-
-## 2. The flip — one engine, two answers (0:25–0:55)
-
-**ON SCREEN:** Switch the mode dropdown from Raccoon to Curb pressure, same hour.
+**ON SCREEN:** Team on camera or a title card, then cut to the map already loaded.
 
 **SAY:**
-> "Now watch — same hour, same block faces, I just switch modes."
->
-> "Pressure moves off the side streets and onto Washington Ave's commercial blocks instead.
-> That's not two apps. It's one engine, fed by eighteen-plus public datasets, and we changed
-> seven numbers to go from 'where does a raccoon eat tonight' to 'where's curb parking about to
-> be a problem.'"
+> "Trash Pandas. CurbFusion — built in a day. It turns Houston's public data into an answer for
+> whatever you're trying to decide."
 
-## 3. The problem, in one sentence (0:55–1:15)
+## 2. The pitch (0:15–0:45)
 
 **SAY:**
-> "Curb demand is never measured directly. Permit rules, traffic counts, 311 complaints, land
-> use — they're all in different city tables, different formats, and nobody puts them together.
-> We snap every one of them onto the same grid: block face by hour of the week."
+> "Houston publishes hundreds of datasets — parcels, 311 calls, garbage pickup days, traffic
+> counts, flood zones, bus stops. Each one answers nothing on its own.
+>
+> We pulled eighteen of them, snapped every one onto the same grid — block face by hour of the
+> week — and let an agent weight them for whatever question you ask. We tested it against the
+> hardest customer we could think of: a raccoon."
 
-## 4. Scale — this isn't one street (1:15–1:45)
+## 3. Live demo — the flip (0:45–1:45)
 
-**ON SCREEN:** Open the corridor dropdown, show the full list, switch through 2-3 wards quickly
-(e.g. Third Ward, Fifth Ward) letting the map redraw each time.
+**ON SCREEN:** Map open, Raccoon mode, Washington Ave, Wed ~22:00. Let it sit a beat.
 
 **SAY:**
-> "And it's not just Washington Ave. This runs on nine real Houston corridors — all six historic
-> wards, plus three commercial strips — built from the same live city data, no synthetic numbers
-> anywhere. Adding the next one is a single command, not a rewrite."
+> "Raccoon family, Wednesday 10 PM — the Heights lights up. Why? Garbage pickup is Thursday, so
+> bins are on the curb tonight — that's the city's Solid Waste polygons. Tree-trim requests from
+> 311 mean big trees to den in. Dead-animal pickups, also 311, mark the dangerous blocks, so those
+> score down. Quiet streets, from the traffic counts.
+>
+> None of those datasets mention raccoons. Together, they answer the question."
 
-## 5. Built to be used, not decoded (1:45–2:20)
-
-**ON SCREEN:** Type a real address into the search box, let it jump and zoom in. Click a block
-face. Point at the plain-language sentence. Click "Copy briefing."
+**ON SCREEN:** Flip the mode dropdown to Curb pressure, same hour.
 
 **SAY:**
-> "Search any Houston address — it jumps straight there and tells you honestly whether that block
-> is modeled yet.
->
-> Click a block and you get a plain-English read, not a wall of numbers — 'high curb pressure,
-> permit hours are in effect right now, the block is mostly commercial.'
->
-> And this button — copy briefing — turns that into a pasteable report: score, reasoning, land
-> use, pickup schedule, 311 activity, a live link back. That's something a city official can drop
-> into an email today, not a dashboard they have to translate for someone else."
+> "Same grid, same hour — we changed seven numbers. Now it's a parking planner's map: commercial
+> frontage, permit hours, capacity. Washington Ave lights up, the Heights goes quiet."
 
-`[optional, if time allows]` **ON SCREEN:** Toggle the what-if checkbox.
-> "This what-if toggle recomputes pressure live under a policy scenario — it's a light-weight
-> simulator, not just a snapshot."
+## 4. Scale — this isn't one street (1:45–2:10)
 
-## 6. The frontier feature (2:20–3:00)
-
-**ON SCREEN:** Click the "Recipe Agent" nav link. Click one of the "or try" example prompts (or
-type one), and — if the key/proxy is live — let it run. If not live, show the pre-filled example
-result already on screen instead of triggering a new call.
+**ON SCREEN:** Open the corridor dropdown, flip through 2-3 wards quickly (e.g. Third Ward, Fifth
+Ward), letting the map redraw each time.
 
 **SAY:**
-> "Here's the part that surprises people. Curb pressure and raccoon foraging are two recipes —
-> signed weights over a shared data catalog, plus a time window. We ship seven, including a
-> delivery driver, a food truck, a homebuyer who wants quiet and dry.
->
-> And you can describe your own: type a need in a sentence, and an LLM proposes the weights —
-> with a one-line reason for every dataset it picked, and an honest wishlist of data it wanted but
-> we don't have yet. That wishlist is generated by the system itself. It's literally telling us
-> what to go get next."
+> "And it's not just Washington Ave. The same grid runs on nine real Houston corridors — all six
+> historic wards, plus three commercial strips — built from the same live city data, no synthetic
+> numbers anywhere. Adding the next one is one command, not a rewrite."
 
-## 7. Who this is actually for (3:00–3:20)
+## 5. Recipe Agent — where it surprises people (2:10–3:00)
+
+**ON SCREEN:** Click "Recipe Agent" in the nav. Click a "start from" chip `[or type a live
+prompt only if the key/proxy is confirmed working]`.
 
 **SAY:**
-> "ParkHouston and district managers for curb pressure. Solid Waste ops for complaint stacking.
-> Food trucks and delivery drivers for where to stop. Homebuyers who want quiet and dry. One
-> framework, real named customers — the raccoon is just proof it's need-agnostic."
+> "This is where the agent comes in. You describe the need in a sentence — it picks the datasets,
+> signs them, weights them, and sets when it applies, with a reason for every one it chose. Bus
+> stops negative, bike lanes negative, commercial frontage positive, seven to ten AM. Tick, drag,
+> save — it's a mode on the map.
+>
+> Notice the greyed-out rows: parking citations, meter transactions, rideshare pickups from
+> Waymo. The agent wanted them. We don't have them. The city does. That's the ask, and that's the
+> business."
 
-## 8. Close (3:20–3:45)
+## 6. Built to be used, not decoded (3:00–3:30)
+
+**ON SCREEN:** Back on the map. Search a real address, let it jump and zoom in. Click a block.
+Click "Copy briefing."
 
 **SAY:**
-> "Every constant we used is logged. Every data source is public and listed. Nothing here is
-> invented — where we don't have data, the app says so instead of faking a number.
+> "Search any Houston address — it jumps straight there. Click a block, you get a plain-English
+> read instead of a wall of numbers. And this — copy briefing — turns it into a report you can
+> paste into an email or a 311 ticket today, not a dashboard someone else has to translate."
+
+## 7. How it's built (3:30–4:05)
+
+**SAY:**
+> "Python hits the city's ArcGIS endpoints directly, no keys. Parcels, 311 cases, pickup
+> polygons, traffic counts, FEMA flood zones, bikeways, parks, stop signs. Every dataset becomes a
+> number from zero to one, per block face. A recipe is signed weights and a time window — scoring
+> is a dot product, computed live in the browser. The agent gets the catalog and your sentence,
+> and returns JSON.
 >
-> The one thing standing between this being a model and being a measurement is data the city
-> already has. That's the ask.
+> The hardest part was the city's own servers throttling deep pages, so we tiered the data
+> honestly: live, located, licensed — nothing invented to fill a gap."
+
+## 8. Close (4:05–4:30)
+
+**SAY:**
+> "Compiling the data was a day. Asking it a new question is a sentence. Planners, delivery
+> drivers, homebuyers, city crews, and yes — raccoons — all on the same grid.
 >
-> This is CurbFusion, built by Team Trash Pandas for the Houston Open Data track. Thanks for
-> watching."
+> Next: citywide tiles, nightly refresh, and the datasets the city already has to turn this from
+> a model into a measurement.
+>
+> Track: Houston Open Data. Eat trash, fuse data."
 
 ---
 
@@ -110,15 +112,16 @@ result already on screen instead of triggering a new call.
 
 | Section | Target time | Cumulative |
 |---|---|---|
-| Hook | 25s | 0:25 |
-| The flip | 30s | 0:55 |
-| The problem | 20s | 1:15 |
-| Scale | 30s | 1:45 |
-| Usability | 35s | 2:20 |
-| Frontier | 40s | 3:00 |
-| Customers | 20s | 3:20 |
-| Close | 25s | 3:45 |
+| Cold open | 15s | 0:15 |
+| The pitch | 30s | 0:45 |
+| The flip (demo) | 60s | 1:45 |
+| Scale | 25s | 2:10 |
+| Recipe Agent | 50s | 3:00 |
+| Usability | 30s | 3:30 |
+| How it's built | 35s | 4:05 |
+| Close | 25s | 4:30 |
 
-Cutting the `[optional]` what-if beat and trimming pauses gets you to ~2:45. Adding natural
-ad-libs while clicking around gets you to ~4:30 without padding. Either end is inside the 2-5
-minute window.
+Runs ~4:30 read straight. To hit ~3:00, cut section 6 (usability) entirely and trim section 7
+(how it's built) to two sentences — both are the most cuttable since sections 2-5 carry the
+core insight, the scale proof, and the frontier feature. To stretch past 4:30, let natural
+pauses/ad-libs happen while clicking rather than adding more script.
