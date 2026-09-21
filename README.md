@@ -30,6 +30,18 @@ Start with [the shared build plan](docs/SHARED_BUILD_PLAN.md), [the data contrac
 
 See [docs/HANDOFF.md](docs/HANDOFF.md) for the full data contract and build order, [docs/MODEL.md](docs/MODEL.md) / [docs/SCORING.md](docs/SCORING.md) for how components become scores, and [docs/DEMO.md](docs/DEMO.md) for the presentation script.
 
+## Screenshots
+
+| Raccoon mode, Sixth Ward | Curb pressure, Third Ward |
+|---|---|
+| ![Raccoon mode lighting up the Heights on garbage night](docs/screenshots/map-raccoon-mode.png) | ![Curb pressure over Third Ward](docs/screenshots/map-curb-mode-third-ward.png) |
+
+| Satellite + sunset tint | Recipe Lab |
+|---|---|
+| ![Satellite basemap with sunset tint over Washington Ave](docs/screenshots/map-satellite-sunset.png) | ![Recipe Lab slider UI](docs/screenshots/recipe-lab.png) |
+
+More views — including the current Recipe Agent and a preview of the expanded, categorized Recipe Agent your partner has in progress (not yet merged) — are in [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md).
+
 ### Corridors & scaling beyond one street
 
 Washington Ave has the deep dataset (311, solid-waste schedules, ADT, flood/bike/park layers, Raccoon mode). The other eight corridors — all five remaining historic wards plus three commercial strips — are built from a generalized, bbox-parameterized pipeline (`scripts/core/build_new_corridor.py`) using the same real, live Houston/ArcGIS endpoints (HCAD parcels, road centerlines, residential permit parking, no auth) and real OSM ward boundaries. They deliberately don't fake Raccoon mode or a permit-district scenario they have no data for — the UI shows a "not pulled yet for this corridor" note instead of inventing numbers. Adding another corridor anywhere in Houston is one command:
@@ -76,7 +88,8 @@ python -m http.server
 ├── data/       # Washington Ave data + corridor.json/corridor_lite.json; areas.json lists all corridors
 │   ├── areas/  # per-corridor data + corridor_lite.json for the non-Washington-Ave corridors
 │   └── core/   # faces.geojson, manifest.json, assumptions.json, recipes.json
-├── docs/       # hackathon info, build plan, data contract, model + scoring notes, demo script, handoff notes
+├── docs/       # hackathon info, build plan, data contract, model + scoring notes, demo/pitch scripts,
+│               #   handoff notes, screenshots/ + SCREENSHOTS.md
 ├── scripts/    # data pull + model build scripts (scripts/core/ is the current pipeline;
 │               #   build_new_corridor.py adds any new corridor from a bounding box)
 ├── src/        # curbfusion.html (main demo), recipe_lab.html, recipe_agent.html,
